@@ -1,0 +1,3300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#6E56E8">
+<meta name="description" content="Твоё расписание, время пар, домашние задания и оценки в одном месте">
+<title>Paira — расписание колледжа</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Paira">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+/* =========================================================
+   Paira — design tokens
+   ========================================================= */
+:root{
+  --bg: #F6F5FB;
+  --surface: #FFFFFF;
+  --surface-2: #FBFAFF;
+  --accent: #6E56E8;
+  --accent-2: #9285F2;
+  --accent-soft: #EFEBFE;
+  --text: #17151F;
+  --text-secondary: #837F94;
+  --text-tertiary: #ACA8BB;
+  --border: #ECEAF4;
+  --success: #2FBE79;
+  --success-soft: #E4F8ED;
+  --warning: #F3A93B;
+  --warning-soft: #FDF1DE;
+  --danger: #F0506E;
+  --danger-soft: #FCE7EB;
+  --info: #4AA8F0;
+
+  --radius-l: 24px;
+  --radius-m: 18px;
+  --radius-s: 12px;
+  --shadow-card: 0 8px 24px rgba(30, 20, 70, 0.06);
+  --shadow-pop: 0 16px 40px rgba(30, 20, 70, 0.16);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"]{
+  --bg: #131120;
+  --surface: #1C1A2B;
+  --surface-2: #211F32;
+  --accent: #8877F4;
+  --accent-2: #A395F7;
+  --accent-soft: rgba(136,119,244,0.16);
+  --text: #F4F3FA;
+  --text-secondary: #9C98B2;
+  --text-tertiary: #6E6A85;
+  --border: #2C2A3E;
+  --success: #3DD68C;
+  --success-soft: rgba(61,214,140,0.14);
+  --warning: #F5B85C;
+  --warning-soft: rgba(245,184,92,0.14);
+  --danger: #F17188;
+  --danger-soft: rgba(241,113,136,0.14);
+  --info: #6BBBF7;
+  --shadow-card: 0 8px 24px rgba(0,0,0,0.30);
+  --shadow-pop: 0 16px 40px rgba(0,0,0,0.45);
+  color-scheme: dark;
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+  transition: background .25s ease, color .25s ease;
+}
+button, input, textarea, select{ font-family: inherit; }
+button{ cursor:pointer; }
+svg{ width:18px; height:18px; flex-shrink:0; display:block; }
+::-webkit-scrollbar{ display:none; }
+* { scrollbar-width:none; }
+
+a{ color:inherit; text-decoration:none; }
+
+#app{
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 92px;
+}
+.hidden{ display:none !important; }
+
+/* =========================================================
+   Top bar
+   ========================================================= */
+.topbar{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding: 20px 20px 4px;
+}
+.topbar h1{
+  font-size: 26px; font-weight: 800; margin:0 0 4px; letter-spacing:-0.02em;
+}
+.topbar .sub{ font-size: 14px; color:var(--text-secondary); }
+.icon-btn{
+  width:42px; height:42px; border-radius:14px; border:1px solid var(--border);
+  background:var(--surface); display:flex; align-items:center; justify-content:center;
+  color:var(--text); box-shadow: var(--shadow-card); flex-shrink:0;
+  transition: transform .15s ease;
+}
+.icon-btn:active{ transform:scale(0.92); }
+.icon-btn svg{ width:20px; height:20px; }
+
+/* =========================================================
+   Screen container
+   ========================================================= */
+.screen{ padding: 6px 20px 20px; animation: fadeSlideIn .28s ease; }
+@keyframes fadeSlideIn{
+  from{ opacity:0; transform: translateY(8px); }
+  to{ opacity:1; transform:none; }
+}
+@media (prefers-reduced-motion: reduce){
+  .screen{ animation:none; }
+}
+
+.section-title{
+  font-size: 15px; font-weight:700; color:var(--text); margin: 22px 2px 10px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.section-title .link{ font-size:13px; font-weight:600; color:var(--accent); }
+
+/* =========================================================
+   Hero status card (Главная)
+   ========================================================= */
+.hero-card{
+  border-radius: var(--radius-l);
+  padding: 22px;
+  position:relative;
+  overflow:hidden;
+  color:#fff;
+  background: linear-gradient(150deg, var(--accent), var(--accent-2));
+  box-shadow: 0 16px 32px rgba(110,86,232,0.28);
+  transition: all .3s ease;
+}
+[data-theme="dark"] .hero-card{ box-shadow: 0 16px 32px rgba(0,0,0,0.4); }
+.hero-card.neutral{
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.hero-card .pill{
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:12.5px; font-weight:700; letter-spacing:.02em;
+  background: rgba(255,255,255,0.18);
+  padding: 5px 10px 5px 8px; border-radius:999px;
+}
+.hero-card.neutral .pill{ background: var(--accent-soft); color: var(--accent); }
+.hero-card .pill .dot{ width:6px; height:6px; border-radius:50%; background:#fff; }
+.hero-card.neutral .pill .dot{ background: var(--accent); }
+.hero-card .pill.live .dot{ animation: pulse 1.6s infinite; }
+@keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+.hero-title{ font-size: 24px; font-weight:800; margin: 14px 0 2px; letter-spacing:-0.01em; }
+.hero-meta{ font-size: 13.5px; opacity:.85; }
+.hero-card.neutral .hero-meta{ color:var(--text-secondary); opacity:1; }
+
+.hero-body{ display:flex; align-items:center; justify-content:space-between; margin-top:16px; }
+.hero-timer-label{ font-size:12.5px; opacity:.8; margin-bottom:2px; }
+.hero-card.neutral .hero-timer-label{ color:var(--text-secondary); opacity:1; }
+.hero-timer{ font-size: 42px; font-weight:800; font-variant-numeric: tabular-nums; letter-spacing:-0.02em; }
+
+.ring-wrap{ width:76px; height:76px; position:relative; flex-shrink:0; }
+.ring-wrap svg{ width:100%; height:100%; transform:rotate(-90deg); }
+.ring-track{ fill:none; stroke: rgba(255,255,255,0.25); stroke-width:6; }
+.hero-card.neutral .ring-track{ stroke: var(--border); }
+.ring-fill{ fill:none; stroke:#fff; stroke-width:6; stroke-linecap:round; transition: stroke-dashoffset .4s ease; }
+.hero-card.neutral .ring-fill{ stroke: var(--accent); }
+.ring-pct{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:800;
+}
+
+.next-card{
+  margin-top:12px; border-radius: var(--radius-m); padding:16px;
+  background: var(--surface); border:1px solid var(--border); box-shadow: var(--shadow-card);
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.next-card .k{ font-size:12px; color:var(--text-secondary); font-weight:600; margin-bottom:2px; }
+.next-card .v{ font-size:16px; font-weight:700; }
+.next-card .t{ font-size:12.5px; color:var(--text-secondary); margin-top:2px; }
+.next-card .badge{
+  font-size:12px; font-weight:700; color:var(--accent); background:var(--accent-soft);
+  padding:6px 10px; border-radius:999px; white-space:nowrap;
+}
+.next-card .emoji-badge{ font-size:26px; }
+
+/* today list */
+.lesson-row{
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface); border:1px solid var(--border); border-radius: var(--radius-m);
+  padding: 13px 14px; margin-bottom:10px; box-shadow: var(--shadow-card);
+  transition: border-color .2s ease, transform .12s ease;
+}
+.lesson-row:active{ transform: scale(0.99); }
+.lesson-row.active{ border-color: var(--accent); background: var(--accent-soft); }
+.lesson-row.cancelled{ opacity:.55; }
+.lesson-num{
+  width:34px; height:34px; border-radius:11px; background:var(--surface-2); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13.5px; flex-shrink:0;
+  color:var(--text-secondary);
+}
+.lesson-row.active .lesson-num{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.lesson-time{ font-size:11.5px; color:var(--text-secondary); line-height:1.35; width:50px; flex-shrink:0; }
+.lesson-info{ flex:1; min-width:0; }
+.lesson-subject{ font-size:15px; font-weight:700; display:flex; align-items:center; gap:6px; }
+.lesson-subject .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.lesson-sub{ font-size:12.5px; color:var(--text-secondary); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lesson-strike{ text-decoration: line-through; }
+.lesson-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.hw-flag{
+  width:30px; height:30px; border-radius:9px; background:var(--accent-soft); color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.hw-flag svg{ width:15px; height:15px; }
+.status-dot{ width:8px; height:8px; border-radius:50%; }
+.status-dot.done{ background:var(--success); }
+.status-dot.active{ background:var(--accent); }
+.status-dot.upcoming{ background:var(--text-tertiary); }
+
+.gap-row{
+  display:flex; align-items:center; gap:10px; padding: 6px 4px 10px 50px; color:var(--text-secondary); font-size:12.5px;
+}
+.gap-row svg{ width:14px; height:14px; flex-shrink:0; }
+
+.empty-state{
+  text-align:center; padding: 38px 20px; color:var(--text-secondary);
+}
+.empty-state .emoji{ font-size:38px; margin-bottom:10px; }
+.empty-state .title{ font-weight:700; color:var(--text); font-size:15.5px; margin-bottom:4px; }
+.empty-state .desc{ font-size:13.5px; }
+
+/* =========================================================
+   Bottom nav
+   ========================================================= */
+.bottom-nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  display:flex; justify-content:center;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 24px rgba(20,10,60,0.05);
+}
+.nav-btn{
+  flex:1; max-width:130px; background:none; border:none; display:flex; flex-direction:column;
+  align-items:center; gap:3px; padding:6px 4px; color:var(--text-tertiary); border-radius:12px;
+  transition: color .15s ease;
+}
+.nav-btn svg{ width:23px; height:23px; }
+.nav-btn span{ font-size:11px; font-weight:600; }
+.nav-btn.active{ color: var(--accent); }
+.nav-btn:active{ transform: scale(0.94); }
+
+/* =========================================================
+   Schedule screen
+   ========================================================= */
+.week-strip{ display:flex; gap:7px; overflow-x:auto; padding: 4px 2px 4px; margin-bottom: 8px; }
+.week-day{
+  flex:1; min-width:44px; background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:9px 4px; text-align:center; display:flex; flex-direction:column; gap:3px; align-items:center;
+  transition: all .15s ease;
+}
+.week-day .wd-name{ font-size:11px; color:var(--text-secondary); font-weight:600; }
+.week-day .wd-num{ font-size:15px; font-weight:800; }
+.week-day.selected{ background:var(--accent); border-color:var(--accent); }
+.week-day.selected .wd-name, .week-day.selected .wd-num{ color:#fff; }
+.week-day.today:not(.selected){ border-color:var(--accent); }
+.week-day.off .wd-num{ color:var(--text-tertiary); }
+
+.day-banner{
+  border-radius: var(--radius-m); padding:14px 16px; margin: 6px 0 14px; font-size:13.5px; font-weight:700;
+  display:flex; align-items:center; gap:8px;
+}
+.day-banner.vacation{ background:var(--info); color:#fff; }
+.day-banner.holiday{ background:var(--warning-soft); color:#B5730A; }
+[data-theme="dark"] .day-banner.holiday{ color:var(--warning); }
+.day-banner.sick{ background:var(--danger-soft); color:#C23854; }
+[data-theme="dark"] .day-banner.sick{ color:var(--danger); }
+.day-banner.personal{ background:var(--accent-soft); color:var(--accent); }
+.day-banner.weekend{ background:var(--surface-2); color:var(--text-secondary); border:1px solid var(--border); }
+.day-banner.short{ background:var(--success-soft); color:#1D8F55; }
+[data-theme="dark"] .day-banner.short{ color:var(--success); }
+
+.fab-row{ display:flex; justify-content:flex-end; margin-top:8px; }
+.fab{
+  display:flex; align-items:center; gap:8px; background:var(--accent); color:#fff; border:none;
+  padding:13px 18px; border-radius:16px; font-weight:700; font-size:14px; box-shadow: 0 10px 22px rgba(110,86,232,0.32);
+}
+.fab svg{ width:17px; height:17px; }
+.fab:active{ transform:scale(0.97); }
+
+/* =========================================================
+   Homework
+   ========================================================= */
+.seg-tabs{ display:flex; background:var(--surface-2); border-radius:14px; padding:4px; gap:4px; margin: 8px 0 14px; }
+.seg-tab{ flex:1; text-align:center; padding:9px 6px; border-radius:11px; border:none; background:none; font-weight:700; font-size:13.5px; color:var(--text-secondary); }
+.seg-tab.active{ background:var(--surface); color:var(--text); box-shadow: var(--shadow-card); }
+
+.chip-row{ display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; }
+.chip{ flex-shrink:0; padding:8px 14px; border-radius:999px; border:1px solid var(--border); background:var(--surface); font-size:13px; font-weight:600; color:var(--text-secondary); }
+.chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+.hw-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:15px;
+  margin-bottom:11px; box-shadow: var(--shadow-card); display:flex; gap:12px; align-items:flex-start;
+}
+.hw-swatch{ width:38px; height:38px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:13px; }
+.hw-body{ flex:1; min-width:0; }
+.hw-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.hw-subject{ font-weight:700; font-size:15px; }
+.hw-meta{ font-size:11.5px; color:var(--text-secondary); margin-top:1px; }
+.hw-text{ font-size:13.5px; color:var(--text); margin-top:7px; line-height:1.4; }
+.hw-text.done{ color:var(--text-tertiary); text-decoration:line-through; }
+.hw-due-row{ display:flex; align-items:center; gap:8px; margin-top:9px; }
+.hw-due{ font-size:12px; font-weight:700; color:var(--text-secondary); }
+.hw-due.urgent{ color:var(--danger); }
+.hw-prio{ font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; background:var(--danger-soft); color:var(--danger); }
+.hw-check{ width:24px; height:24px; border-radius:8px; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.hw-check.checked{ background:var(--success); border-color:var(--success); color:#fff; }
+.hw-check svg{ width:14px; height:14px; }
+
+/* =========================================================
+   Grades (Оценки)
+   ========================================================= */
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.stat-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
+  padding:14px; box-shadow: var(--shadow-card);
+}
+.stat-card .k{ font-size:12px; color:var(--text-secondary); font-weight:600; margin-bottom:4px; }
+.stat-card .v{ font-size:24px; font-weight:800; letter-spacing:-0.01em; }
+.stat-card .trend{ font-size:12px; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:3px; }
+.stat-card .trend.up{ color:var(--success); }
+.stat-card .trend.down{ color:var(--danger); }
+.stat-card .trend.flat{ color:var(--text-tertiary); }
+.mark-chip{ font-size:12px; font-weight:700; margin-top:3px; }
+
+.grade-chart-wrap{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
+  padding:16px 14px 10px; box-shadow: var(--shadow-card); margin-bottom:16px;
+}
+.grade-chart-wrap svg{ width:100%; height:auto; display:block; }
+
+.grade-pills{ display:flex; gap:8px; margin:4px 0 14px; }
+.grade-pill{
+  flex:1; height:52px; border-radius:14px; border:1.5px solid var(--border); background:var(--surface);
+  font-size:19px; font-weight:800; color:var(--text); display:flex; align-items:center; justify-content:center;
+}
+.grade-pill[data-v="5"]{ color:var(--success); }
+.grade-pill[data-v="4"]{ color:var(--info); }
+.grade-pill[data-v="3"]{ color:var(--warning); }
+.grade-pill[data-v="2"]{ color:var(--danger); }
+.grade-pill.active{ border-color: currentColor; background: var(--accent-soft); }
+
+.grade-row{
+  display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-m); padding:12px 14px; margin-bottom:9px; box-shadow: var(--shadow-card);
+}
+.grade-badge{
+  width:38px; height:38px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:800; font-size:16px;
+}
+.grade-row .gr-body{ flex:1; min-width:0; }
+.grade-row .gr-subj{ font-weight:700; font-size:14.5px; }
+.grade-row .gr-mark{ font-weight:700; font-size:12.5px; margin-left:6px; }
+.grade-row .gr-meta{ font-size:12px; color:var(--text-secondary); margin-top:1px; }
+
+.subj-avg-row{
+  display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-m); padding:12px 14px; margin-bottom:9px; box-shadow: var(--shadow-card);
+}
+.subj-avg-row .bar-track{ flex:1; height:6px; border-radius:999px; background:var(--surface-2); overflow:hidden; }
+.subj-avg-row .bar-fill{ height:100%; border-radius:999px; }
+
+/* =========================================================
+   Profile
+   ========================================================= */
+.profile-head{ display:flex; align-items:center; gap:14px; padding: 6px 2px 18px; }
+.avatar{ width:58px; height:58px; border-radius:18px; background:linear-gradient(150deg,var(--accent),var(--accent-2)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:22px; flex-shrink:0; }
+.profile-name{ font-size:18px; font-weight:800; }
+.profile-sub{ font-size:13px; color:var(--text-secondary); margin-top:2px; }
+
+.list-group{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; margin-bottom:16px; box-shadow: var(--shadow-card); }
+.list-item{ display:flex; align-items:center; gap:12px; padding:14px 15px; border-bottom:1px solid var(--border); }
+.list-item:last-child{ border-bottom:none; }
+.list-item .li-icon{ width:34px; height:34px; border-radius:10px; background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.list-item .li-icon svg{ width:17px; height:17px; }
+.list-item .li-text{ flex:1; font-size:14.5px; font-weight:600; }
+.list-item .li-sub{ font-size:12px; color:var(--text-secondary); font-weight:500; }
+.list-item .chev{ color:var(--text-tertiary); }
+.list-item .chev svg{ width:16px; height:16px; }
+
+.theme-row{ display:flex; gap:8px; padding:12px 15px; }
+.theme-opt{ flex:1; text-align:center; padding:10px 4px; border-radius:12px; border:1px solid var(--border); font-size:12.5px; font-weight:700; color:var(--text-secondary); }
+.theme-opt.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+.switch{ width:44px; height:26px; border-radius:999px; background:var(--border); position:relative; flex-shrink:0; transition:background .2s; }
+.switch.on{ background:var(--accent); }
+.switch .knob{ width:20px; height:20px; border-radius:50%; background:#fff; position:absolute; top:3px; left:3px; transition:left .2s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+.switch.on .knob{ left:21px; }
+
+/* =========================================================
+   Forms / modal
+   ========================================================= */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(15,10,35,0.45); z-index:100;
+  display:flex; align-items:flex-end; justify-content:center;
+  animation: overlayIn .2s ease;
+}
+@keyframes overlayIn{ from{opacity:0;} to{opacity:1;} }
+.modal-sheet{
+  width:100%; max-width:520px; background:var(--bg); border-radius: 26px 26px 0 0;
+  max-height: 92vh; overflow-y:auto; padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
+  animation: sheetUp .28s cubic-bezier(.2,.9,.25,1);
+}
+@keyframes sheetUp{ from{ transform: translateY(100%); } to{ transform:none; } }
+.modal-grabber{ width:38px; height:4px; background:var(--border); border-radius:999px; margin:8px auto 14px; }
+.modal-title{ font-size:19px; font-weight:800; margin: 4px 0 18px; display:flex; align-items:center; justify-content:space-between; }
+.modal-title .close-x{ width:32px; height:32px; border-radius:10px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); border:none; }
+.modal-title .close-x svg{ width:15px; height:15px; }
+
+.field{ margin-bottom:16px; }
+.field label{ display:block; font-size:12.5px; font-weight:700; color:var(--text-secondary); margin-bottom:7px; }
+.field input[type="text"], .field input[type="date"], .field input[type="time"], .field textarea, .field select{
+  width:100%; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px 14px;
+  font-size:14.5px; color:var(--text); outline:none; transition: border-color .15s;
+}
+.field input:focus, .field textarea:focus, .field select:focus{ border-color:var(--accent); }
+.field textarea{ resize:none; min-height:76px; line-height:1.4; }
+
+.pill-select{ display:flex; gap:8px; flex-wrap:wrap; }
+.pill-opt{ padding:10px 15px; border-radius:12px; border:1px solid var(--border); background:var(--surface); font-size:13.5px; font-weight:600; color:var(--text-secondary); }
+.pill-opt.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+.color-select{ display:flex; gap:10px; flex-wrap:wrap; }
+.color-dot{ width:32px; height:32px; border-radius:50%; border:3px solid transparent; position:relative; }
+.color-dot.active{ border-color: var(--text); }
+.color-dot.active::after{ content:''; position:absolute; inset:0; border-radius:50%; border:2px solid var(--surface); }
+
+.btn-primary{ width:100%; background:var(--accent); color:#fff; border:none; border-radius:15px; padding:15px; font-size:15px; font-weight:700; box-shadow: 0 10px 22px rgba(110,86,232,0.3); }
+.btn-primary:active{ transform: scale(0.98); }
+.btn-primary.danger{ background:var(--danger); box-shadow:0 10px 22px rgba(240,80,110,0.28); }
+.btn-secondary{ width:100%; background:var(--surface-2); color:var(--text); border:1px solid var(--border); border-radius:15px; padding:14px; font-size:14.5px; font-weight:700; margin-top:10px; }
+.btn-row{ display:flex; gap:10px; }
+.btn-row > *{ flex:1; margin-top:0; }
+
+.subject-picker-item{ display:flex; align-items:center; gap:12px; padding:13px 4px; border-bottom:1px solid var(--border); }
+.subject-picker-item:last-child{ border-bottom:none; }
+.subject-picker-item .sw{ width:34px; height:34px; border-radius:10px; flex-shrink:0; }
+.subject-picker-item .sname{ font-weight:700; font-size:14.5px; }
+.subject-picker-item .smeta{ font-size:11.5px; color:var(--text-secondary); }
+
+.slot-row{ display:flex; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--border); }
+.slot-row:last-child{ border-bottom:none; }
+.slot-num{ width:28px; height:28px; border-radius:8px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12.5px; color:var(--text-secondary); flex-shrink:0; }
+.slot-times{ display:flex; gap:8px; flex:1; }
+.slot-times input{ flex:1; min-width:0; }
+.slot-remove{ width:30px; height:30px; border-radius:9px; background:var(--danger-soft); color:var(--danger); border:none; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.slot-remove svg{ width:14px; height:14px; }
+
+.day-slot{ display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:14px; margin-bottom:9px; }
+.day-slot .dnum{ width:26px; height:26px; border-radius:8px; background:var(--surface-2); color:var(--text-secondary); font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.day-slot .dselect{ flex:1; font-size:14px; font-weight:600; color:var(--text-secondary); }
+.day-slot .dselect.filled{ color:var(--text); }
+.day-slot .dtime{ font-size:11.5px; color:var(--text-tertiary); }
+.day-slot .dremove{ width:26px; height:26px; border-radius:8px; background:transparent; color:var(--text-tertiary); border:none; }
+
+.wizard-step{ font-size:12.5px; color:var(--accent); font-weight:700; margin-bottom:6px; }
+.wizard-dots{ display:flex; gap:6px; margin: 18px 0; }
+.wizard-dots .d{ height:5px; flex:1; border-radius:999px; background:var(--border); }
+.wizard-dots .d.done{ background:var(--accent); }
+
+.check-row{ display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--border); }
+.check-row:last-child{ border-bottom:none; }
+.check-row .crlabel{ font-size:14.5px; font-weight:600; }
+
+.calendar-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap:4px; }
+.cal-dow{ text-align:center; font-size:11px; color:var(--text-tertiary); font-weight:700; padding-bottom:6px; }
+.cal-cell{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:12px; font-size:13.5px; font-weight:600; position:relative; color:var(--text); }
+.cal-cell.muted{ color:var(--text-tertiary); }
+.cal-cell.today{ border:1.5px solid var(--accent); }
+.cal-cell .cal-dot{ position:absolute; bottom:5px; width:4px; height:4px; border-radius:50%; }
+.cal-cell.mark-vacation{ background: rgba(74,168,240,0.16); }
+.cal-cell.mark-holiday{ background: var(--warning-soft); }
+.cal-cell.mark-sick{ background: var(--danger-soft); }
+.cal-cell.mark-personal{ background: var(--accent-soft); }
+.cal-cell.mark-short{ background: var(--success-soft); }
+.cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.cal-nav .cn-title{ font-weight:800; font-size:15.5px; text-transform:capitalize; }
+.cal-nav button{ width:32px; height:32px; border-radius:10px; border:1px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:center; }
+.cal-nav button svg{ width:15px; height:15px; }
+
+.toast-root{ position:fixed; bottom:96px; left:0; right:0; display:flex; flex-direction:column; align-items:center; gap:8px; z-index:200; pointer-events:none; }
+.toast{ background: var(--text); color: var(--bg); font-size:13.5px; font-weight:600; padding:10px 16px; border-radius:12px; box-shadow: var(--shadow-pop); animation: toastIn .2s ease; max-width:80%; text-align:center; }
+@keyframes toastIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+.onb-wrap{ min-height:100vh; display:flex; flex-direction:column; padding: 60px 28px 32px; text-align:center; align-items:center; justify-content:space-between; }
+.onb-logo{ width:96px; height:96px; border-radius:28px; background:linear-gradient(150deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; box-shadow: 0 8px 20px rgba(110,86,232,0.35); margin:0 auto 26px; }
+.onb-logo svg{ width:44px; height:44px; }
+.onb-title{ font-size:32px; font-weight:800; letter-spacing:-0.02em; margin-bottom:12px; }
+.onb-desc{ font-size:15px; color:var(--text-secondary); line-height:1.5; max-width:300px; margin-bottom:8px; }
+.onb-actions{ width:100%; }
+.onb-skip{
+  display:inline-block; width:100%; text-align:center; margin-top:14px; padding:8px 0;
+  font-size:13.5px; color:var(--text-secondary); font-weight:600;
+  background:none; border:none; -webkit-appearance:none; appearance:none;
+}
+
+.subj-tag{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px 6px 8px; border-radius:999px; background:var(--surface); border:1px solid var(--border); font-size:13px; font-weight:600; margin:0 8px 8px 0; }
+.subj-tag .sd{ width:9px; height:9px; border-radius:50%; }
+
+@media (min-width: 540px){
+  .bottom-nav{ left:50%; transform:translateX(-50%); width:100%; max-width:520px; border-radius:24px 24px 0 0; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<!-- Bottom navigation (shown after onboarding) -->
+<nav id="bottomNav" class="bottom-nav hidden">
+  <button class="nav-btn" data-tab="home">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V20h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Главная</span>
+  </button>
+  <button class="nav-btn" data-tab="schedule">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M8 3v4M16 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>Расписание</span>
+  </button>
+  <button class="nav-btn" data-tab="homework">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h9l3.5 3.5V20a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12h6M9 15.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>ДЗ</span>
+  </button>
+  <button class="nav-btn" data-tab="grades">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.6 6 .7-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6-4.4-4.2 6-.7L12 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span>Оценки</span>
+  </button>
+  <button class="nav-btn" data-tab="profile">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20c1.4-4 4-6 7.5-6s6.1 2 7.5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>Профиль</span>
+  </button>
+</nav>
+
+<div id="modalRoot"></div>
+<div id="toastRoot" class="toast-root"></div>
+
+<script>
+/* ===== store.js ===== */
+/* =========================================================
+   Paira — Store
+   Local-first data layer. Everything lives in localStorage
+   under one key. Structured so a later sync layer can just
+   watch Store.data and push/pull the same shape.
+   ========================================================= */
+
+const STORAGE_KEY = 'paira_data_v1';
+
+const WEEKDAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat']; // JS getDay() order
+const WEEKDAY_LABELS_SHORT = { mon:'Пн', tue:'Вт', wed:'Ср', thu:'Чт', fri:'Пт', sat:'Сб', sun:'Вс' };
+const WEEKDAY_LABELS_FULL = { mon:'Понедельник', tue:'Вторник', wed:'Среда', thu:'Четверг', fri:'Пятница', sat:'Суббота', sun:'Воскресенье' };
+
+const SUBJECT_COLORS = ['#6E56E8','#4AA8F0','#2FBE79','#F3A93B','#F0506E','#EC6FC1','#3BC9C9','#F08A4B'];
+
+function uid(prefix){
+  return (prefix ? prefix + '_' : '') + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+function defaultData(){
+  return {
+    version: 1,
+    profile: { name: '', group: '', college: '', onboarded: false },
+    studyDays: ['mon','tue','wed','thu','fri'], // weekday keys that are study days
+    subjects: [], // {id,name,teacher,room,color}
+    timeTemplates: {
+      regular: [
+        { n:1, start:'07:50', end:'08:30' },
+        { n:2, start:'08:30', end:'10:05' },
+        { n:3, start:'10:20', end:'11:55' },
+        { n:4, start:'12:05', end:'13:40' },
+        { n:5, start:'13:50', end:'15:25' },
+        { n:6, start:'15:35', end:'17:10' }
+      ],
+      short: [
+        { n:1, start:'08:00', end:'08:40' },
+        { n:2, start:'08:50', end:'09:30' },
+        { n:3, start:'09:40', end:'10:20' },
+        { n:4, start:'10:30', end:'11:10' },
+        { n:5, start:'11:20', end:'12:00' },
+        { n:6, start:'12:10', end:'12:50' }
+      ]
+    },
+    // schedule[weekday] = [{n, subjectId}], only lessons that exist are listed
+    schedule: { mon:[], tue:[], wed:[], thu:[], fri:[], sat:[], sun:[] },
+    // per-date overrides keyed by 'YYYY-MM-DD': { [n]: {type:'cancel'} | {type:'replace', subjectId} }
+    overrides: {},
+    // per-date special days keyed by 'YYYY-MM-DD': {type:'holiday'|'sick'|'personal'|'short'}
+    specialDays: {},
+    // short-day template override for a specific special day, keyed by date -> 'short' template is used by default
+    vacations: [], // [{id,start:'YYYY-MM-DD', end:'YYYY-MM-DD', name}]
+    sickLeaves: [], // [{id,start:'YYYY-MM-DD', end:'YYYY-MM-DD', reason}]
+    // per-lesson attendance, keyed 'YYYY-MM-DD_n': {date,n,subjectId,status:'present'|'absent'|'excused',worked}
+    attendance: {},
+    homework: [], // {id, subjectId, text, createdAt, dueDate:'YYYY-MM-DD', priority:'normal'|'important', done, lessonNumber}
+    grades: [], // {id, subjectId, value:number, date:'YYYY-MM-DD', comment}
+    recentSubjects: [], // subjectIds, most-recent first — used to speed up pickers
+    settings: {
+      theme: 'system', // 'light' | 'dark' | 'system'
+      notifications: {
+        enabled: false,
+        beforeLesson: true,
+        lessonStart: false,
+        lessonEnd: false,
+        homeworkDue: true
+      }
+    }
+  };
+}
+
+const Store = {
+  data: null,
+
+  load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      this.data = raw ? Object.assign(defaultData(), JSON.parse(raw)) : defaultData();
+      // deep-merge nested defaults in case of older saves
+      const d = defaultData();
+      this.data.timeTemplates = Object.assign(d.timeTemplates, this.data.timeTemplates);
+      this.data.settings = Object.assign(d.settings, this.data.settings);
+      this.data.settings.notifications = Object.assign(d.settings.notifications, this.data.settings.notifications || {});
+      this.data.profile = Object.assign(d.profile, this.data.profile);
+      if(!this.data.sickLeaves) this.data.sickLeaves = [];
+      if(!this.data.attendance) this.data.attendance = {};
+    } catch(e){
+      console.error('Paira: failed to load data, resetting', e);
+      this.data = defaultData();
+    }
+    return this.data;
+  },
+
+  save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    document.dispatchEvent(new CustomEvent('paira:datachange'));
+  },
+
+  reset(){
+    this.data = defaultData();
+    this.save();
+  },
+
+  // ---------- subjects ----------
+  addSubject(subj){
+    const s = { id: uid('subj'), name: subj.name.trim(), teacher: subj.teacher||'', room: subj.room||'', color: subj.color || SUBJECT_COLORS[this.data.subjects.length % SUBJECT_COLORS.length] };
+    this.data.subjects.push(s);
+    this.save();
+    return s;
+  },
+  updateSubject(id, patch){
+    const s = this.data.subjects.find(x=>x.id===id);
+    if(!s) return;
+    Object.assign(s, patch);
+    this.save();
+  },
+  deleteSubject(id){
+    this.data.subjects = this.data.subjects.filter(x=>x.id!==id);
+    Object.values(this.data.schedule).forEach(list=>{
+      for(let i=list.length-1;i>=0;i--) if(list[i].subjectId===id) list.splice(i,1);
+    });
+    this.data.homework = this.data.homework.filter(h=>h.subjectId!==id);
+    this.save();
+  },
+  getSubject(id){ return this.data.subjects.find(x=>x.id===id); },
+
+  // ---------- schedule (recurring) ----------
+  setLessonSubject(weekday, n, subjectId){
+    const list = this.data.schedule[weekday];
+    const existing = list.find(x=>x.n===n);
+    if(subjectId === null){
+      this.data.schedule[weekday] = list.filter(x=>x.n!==n);
+    } else if(existing){
+      existing.subjectId = subjectId;
+    } else {
+      list.push({ n, subjectId });
+    }
+    this.save();
+  },
+  getLessonsForWeekday(weekday){
+    return (this.data.schedule[weekday]||[]).slice().sort((a,b)=>a.n-b.n);
+  },
+
+  // ---------- time templates ----------
+  setTemplateSlot(kind, n, start, end){
+    const arr = this.data.timeTemplates[kind];
+    const ex = arr.find(x=>x.n===n);
+    if(ex){ ex.start=start; ex.end=end; } else { arr.push({n,start,end}); arr.sort((a,b)=>a.n-b.n); }
+    this.save();
+  },
+  removeTemplateSlot(kind, n){
+    this.data.timeTemplates[kind] = this.data.timeTemplates[kind].filter(x=>x.n!==n);
+    this.save();
+  },
+  addTemplateSlot(kind){
+    const arr = this.data.timeTemplates[kind];
+    const n = arr.length ? Math.max(...arr.map(x=>x.n))+1 : 1;
+    const last = arr[arr.length-1];
+    arr.push({ n, start: last?last.end:'08:00', end: last?addMinutesToTime(last.end,40):'08:40' });
+    this.save();
+    return n;
+  },
+
+  // ---------- overrides (date-specific replace/cancel) ----------
+  setOverride(dateStr, n, override){
+    if(!this.data.overrides[dateStr]) this.data.overrides[dateStr] = {};
+    if(override === null){ delete this.data.overrides[dateStr][n]; if(Object.keys(this.data.overrides[dateStr]).length===0) delete this.data.overrides[dateStr]; }
+    else this.data.overrides[dateStr][n] = override;
+    this.save();
+  },
+  getOverride(dateStr, n){
+    return this.data.overrides[dateStr] ? this.data.overrides[dateStr][n] : null;
+  },
+
+  // ---------- special days ----------
+  setSpecialDay(dateStr, type){
+    if(type === null) delete this.data.specialDays[dateStr];
+    else this.data.specialDays[dateStr] = { type };
+    this.save();
+  },
+  getSpecialDay(dateStr){ return this.data.specialDays[dateStr] || null; },
+
+  addVacation(start, end, name){
+    const v = { id: uid('vac'), start, end, name: name||'Каникулы' };
+    this.data.vacations.push(v);
+    this.save();
+    return v;
+  },
+  removeVacation(id){
+    this.data.vacations = this.data.vacations.filter(v=>v.id!==id);
+    this.save();
+  },
+  getVacationForDate(dateStr){
+    return this.data.vacations.find(v => dateStr >= v.start && dateStr <= v.end) || null;
+  },
+
+  // ---------- sick leaves (больничный, date range) ----------
+  addSickLeave(start, end, reason){
+    const sl = { id: uid('sick'), start, end, reason: reason||'' };
+    this.data.sickLeaves.push(sl);
+    this.save();
+    return sl;
+  },
+  removeSickLeave(id){
+    this.data.sickLeaves = this.data.sickLeaves.filter(s=>s.id!==id);
+    this.save();
+  },
+  getSickForDate(dateStr){
+    return this.data.sickLeaves.find(s => dateStr >= s.start && dateStr <= s.end) || null;
+  },
+
+  // ---------- attendance (посещаемость / Н) ----------
+  attKey(dateStr, n){ return dateStr + '_' + n; },
+  setAttendance(dateStr, n, subjectId, status){
+    const key = this.attKey(dateStr, n);
+    if(status === null){ delete this.data.attendance[key]; this.save(); return; }
+    const existing = this.data.attendance[key];
+    this.data.attendance[key] = { date: dateStr, n, subjectId, status, worked: existing ? existing.worked : false };
+    this.save();
+  },
+  getAttendance(dateStr, n){ return this.data.attendance[this.attKey(dateStr, n)] || null; },
+  toggleWorked(key){
+    const a = this.data.attendance[key];
+    if(!a) return;
+    a.worked = !a.worked;
+    this.save();
+  },
+  // all 'Н' marks that haven't been отработано yet, oldest first
+  unworkedAbsences(){
+    return Object.values(this.data.attendance)
+      .filter(a => a.status === 'absent' && !a.worked)
+      .sort((a,b) => a.date.localeCompare(b.date) || a.n - b.n);
+  },
+
+  // ---------- homework ----------
+  addHomework(hw){
+    const h = {
+      id: uid('hw'),
+      subjectId: hw.subjectId,
+      text: hw.text.trim(),
+      createdAt: fmtDate(new Date()),
+      dueDate: hw.dueDate,
+      priority: hw.priority || 'normal',
+      done: false,
+      lessonNumber: hw.lessonNumber || null
+    };
+    this.data.homework.push(h);
+    this.save();
+    return h;
+  },
+  updateHomework(id, patch){
+    const h = this.data.homework.find(x=>x.id===id);
+    if(!h) return;
+    Object.assign(h, patch);
+    this.save();
+  },
+  deleteHomework(id){
+    this.data.homework = this.data.homework.filter(x=>x.id!==id);
+    this.save();
+  },
+  toggleHomeworkDone(id){
+    const h = this.data.homework.find(x=>x.id===id);
+    if(!h) return;
+    h.done = !h.done;
+    this.save();
+  },
+  activeHomeworkForSubject(subjectId){
+    return this.data.homework.filter(h=>h.subjectId===subjectId && !h.done);
+  },
+
+  // ---------- recent subjects (speeds up pickers) ----------
+  touchRecentSubject(subjectId){
+    const list = this.data.recentSubjects.filter(id=>id!==subjectId);
+    list.unshift(subjectId);
+    this.data.recentSubjects = list.slice(0,6);
+    this.save();
+  },
+
+  // ---------- grades ----------
+  addGrade(g){
+    const rec = {
+      id: uid('gr'),
+      subjectId: g.subjectId,
+      value: Number(g.value),
+      date: g.date || fmtDate(new Date()),
+      comment: (g.comment||'').trim()
+    };
+    this.data.grades.push(rec);
+    this.touchRecentSubject(g.subjectId);
+    this.save();
+    return rec;
+  },
+  updateGrade(id, patch){
+    const g = this.data.grades.find(x=>x.id===id);
+    if(!g) return;
+    Object.assign(g, patch);
+    this.save();
+  },
+  deleteGrade(id){
+    this.data.grades = this.data.grades.filter(x=>x.id!==id);
+    this.save();
+  },
+  gradesInRange(fromDateStr, toDateStr){
+    return this.data.grades.filter(g => (!fromDateStr || g.date>=fromDateStr) && (!toDateStr || g.date<=toDateStr));
+  }
+};
+
+// ---------- small date/time helpers used across modules ----------
+function pad2(n){ return String(n).padStart(2,'0'); }
+function fmtDate(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+function weekdayKey(d){ return WEEKDAY_KEYS[d.getDay()]; }
+function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+function minutesToTime(mins){ mins = ((mins%1440)+1440)%1440; return `${pad2(Math.floor(mins/60))}:${pad2(mins%60)}`; }
+function addMinutesToTime(t, add){ return minutesToTime(timeToMinutes(t)+add); }
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+
+
+/* ===== time-engine.js ===== */
+/* =========================================================
+   Paira — Time Engine
+   Pure functions that derive "what's happening right now"
+   from the stored schedule + overrides + special days.
+   Nothing here is cached — every call recomputes from the
+   current system clock, per the app's core rule: never trust
+   a stored "current lesson", always derive it fresh.
+   ========================================================= */
+
+function parseDateStr(s){ return new Date(s + 'T00:00:00'); }
+
+// Priority: vacation > holiday > sick > personal > short > regular > weekend
+function getDayType(dateStr){
+  const vac = Store.getVacationForDate(dateStr);
+  if(vac) return { type:'vacation', vacation:vac };
+
+  const sickLeave = Store.getSickForDate(dateStr);
+  if(sickLeave) return { type:'sick', sickLeave };
+
+  const sp = Store.getSpecialDay(dateStr);
+  if(sp){
+    if(sp.type === 'holiday') return { type:'holiday' };
+    if(sp.type === 'sick') return { type:'sick' };
+    if(sp.type === 'personal') return { type:'personal' };
+    if(sp.type === 'short') return { type:'short', weekday: weekdayKey(parseDateStr(dateStr)) };
+  }
+
+  const wd = weekdayKey(parseDateStr(dateStr));
+  const isStudyDay = Store.data.studyDays.includes(wd);
+  const hasAnyLesson = (Store.data.schedule[wd] || []).length > 0;
+  if(isStudyDay && hasAnyLesson) return { type:'regular', weekday: wd };
+  return { type:'weekend', weekday: wd };
+}
+
+// Returns full lesson list for a date (including cancelled), each with resolved start/end times
+function getLessonsForDate(dateStr, dayInfo){
+  dayInfo = dayInfo || getDayType(dateStr);
+  if(['vacation','holiday','sick','personal','weekend'].includes(dayInfo.type)) return [];
+
+  const wd = dayInfo.weekday || weekdayKey(parseDateStr(dateStr));
+  const templateKind = dayInfo.type === 'short' ? 'short' : 'regular';
+  const template = Store.data.timeTemplates[templateKind];
+
+  const map = {};
+  Store.getLessonsForWeekday(wd).forEach(l => {
+    map[l.n] = { n:l.n, subjectId:l.subjectId, cancelled:false, replaced:false };
+  });
+
+  const overrides = Store.data.overrides[dateStr] || {};
+  Object.keys(overrides).forEach(nStr => {
+    const n = Number(nStr);
+    const o = overrides[nStr];
+    if(o.type === 'cancel'){
+      if(map[n]) map[n].cancelled = true;
+      else map[n] = { n, subjectId:null, cancelled:true };
+    } else if(o.type === 'replace'){
+      if(map[n]){ map[n].subjectId = o.subjectId; map[n].replaced = true; }
+      else map[n] = { n, subjectId:o.subjectId, cancelled:false, replaced:true };
+    }
+  });
+
+  return Object.values(map)
+    .map(l => {
+      const t = template.find(x => x.n === l.n);
+      return t ? Object.assign({}, l, { start:t.start, end:t.end }) : null;
+    })
+    .filter(Boolean)
+    .sort((a,b) => a.n - b.n);
+}
+
+function findNextStudyDay(fromDateStr, maxDays){
+  maxDays = maxDays || 60;
+  const from = parseDateStr(fromDateStr);
+  for(let i = 1; i <= maxDays; i++){
+    const d = addDays(from, i);
+    const ds = fmtDate(d);
+    const info = getDayType(ds);
+    if(info.type === 'regular' || info.type === 'short'){
+      const lessons = getLessonsForDate(ds, info).filter(l => !l.cancelled);
+      if(lessons.length){
+        return { dateStr: ds, date:d, firstLesson: lessons[0], dayInfo: info, isTomorrow: i === 1 };
+      }
+    }
+  }
+  return null;
+}
+
+// Main entry point for the home screen
+function getCurrentStatus(now){
+  now = now || new Date();
+  const dateStr = fmtDate(now);
+  const dayInfo = getDayType(dateStr);
+  const nowSec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+
+  if(dayInfo.type === 'vacation'){
+    const endMs = parseDateStr(dayInfo.vacation.end).getTime() - now.setHours(0,0,0,0);
+    const daysLeft = Math.max(0, Math.round(endMs / 86400000));
+    return { state:'vacation', vacation: dayInfo.vacation, daysLeft, dateStr };
+  }
+  if(dayInfo.type === 'holiday') return { state:'holiday', dateStr, nextStudy: findNextStudyDay(dateStr) };
+  if(dayInfo.type === 'sick') return { state:'sick', dateStr, nextStudy: findNextStudyDay(dateStr), sickLeave: dayInfo.sickLeave };
+  if(dayInfo.type === 'personal') return { state:'personal', dateStr, nextStudy: findNextStudyDay(dateStr) };
+
+  const allLessons = getLessonsForDate(dateStr, dayInfo);
+  const lessons = allLessons.filter(l => !l.cancelled);
+
+  if(dayInfo.type === 'weekend' || lessons.length === 0){
+    return { state:'weekend', dateStr, nextStudy: findNextStudyDay(dateStr) };
+  }
+
+  for(let i = 0; i < lessons.length; i++){
+    const l = lessons[i];
+    const startSec = timeToMinutes(l.start) * 60;
+    const endSec = timeToMinutes(l.end) * 60;
+
+    if(nowSec < startSec){
+      if(i === 0){
+        return { state:'before-day', dateStr, dayInfo, lesson:l, secondsLeft: startSec-nowSec, allLessons };
+      }
+      const prev = lessons[i-1];
+      const isBreak = (l.n === prev.n + 1);
+      return {
+        state: isBreak ? 'break' : 'window',
+        dateStr, dayInfo,
+        rangeStart: prev.end, rangeEnd: l.start,
+        next: l, secondsLeft: startSec-nowSec, allLessons
+      };
+    }
+    if(nowSec >= startSec && nowSec < endSec){
+      const next = lessons[i+1] || null;
+      let afterNext = null;
+      if(next){
+        const isBreak = (next.n === l.n + 1);
+        afterNext = { type: isBreak ? 'break':'window', start:l.end, end:next.start };
+      }
+      return {
+        state:'in-lesson', dateStr, dayInfo,
+        lesson:l, secondsLeft: endSec-nowSec,
+        progress: (nowSec-startSec) / (endSec-startSec),
+        next, afterNext, allLessons
+      };
+    }
+  }
+
+  return { state:'after-day', dateStr, dayInfo, nextStudy: findNextStudyDay(dateStr), allLessons };
+}
+
+// ---------- formatting helpers ----------
+function formatCountdown(totalSeconds){
+  totalSeconds = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(totalSeconds/3600);
+  const m = Math.floor((totalSeconds%3600)/60);
+  const s = totalSeconds%60;
+  if(h > 0) return `${h}:${pad2(m)}:${pad2(s)}`;
+  return `${pad2(m)}:${pad2(s)}`;
+}
+
+function pluralRu(n, one, few, many){
+  n = Math.abs(n) % 100;
+  const n1 = n % 10;
+  if(n > 10 && n < 20) return many;
+  if(n1 > 1 && n1 < 5) return few;
+  if(n1 === 1) return one;
+  return many;
+}
+
+function formatMinutesRel(totalSeconds){
+  const mins = Math.max(0, Math.round(totalSeconds/60));
+  if(mins < 1) return 'меньше минуты';
+  return `${mins} ${pluralRu(mins,'минуту','минуты','минут')}`;
+}
+
+// ---------- grade statistics helpers ----------
+function avg(nums){
+  if(!nums.length) return null;
+  return nums.reduce((a,b)=>a+b,0) / nums.length;
+}
+
+// 100-point score -> 5-point mark, per the college's own scale:
+// 0-49 = 2, 50-69 = 3, 70-89 = 4, 90-100 = 5
+function markFromScore(score){
+  if(score >= 90) return 5;
+  if(score >= 70) return 4;
+  if(score >= 50) return 3;
+  return 2;
+}
+const MARK_COLORS = { 5:'var(--success)', 4:'var(--info)', 3:'var(--warning)', 2:'var(--danger)' };
+function markColor(score){ return MARK_COLORS[markFromScore(score)]; }
+
+function startOfWeek(d){
+  const r = new Date(d);
+  const dow = (r.getDay()+6)%7; // Monday-first
+  r.setDate(r.getDate()-dow);
+  r.setHours(0,0,0,0);
+  return r;
+}
+
+function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+
+// Buckets grades into `count` consecutive periods ending today ('week' or 'month'),
+// returns [{label, from, to, average, count}], oldest first.
+function gradeBuckets(kind, count){
+  const now = new Date();
+  const out = [];
+  for(let i=count-1; i>=0; i--){
+    let from, to, label;
+    if(kind === 'week'){
+      from = addDays(startOfWeek(now), -7*i);
+      to = addDays(from, 6);
+      label = `${from.getDate()}.${pad2(from.getMonth()+1)}`;
+    } else {
+      const base = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      from = startOfMonth(base);
+      to = new Date(base.getFullYear(), base.getMonth()+1, 0);
+      const months = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+      label = months[base.getMonth()];
+    }
+    const fromStr = fmtDate(from), toStr = fmtDate(to);
+    const vals = Store.gradesInRange(fromStr, toStr).map(g=>g.value)
+      .concat(Store.unworkedAbsences().filter(a=>a.date>=fromStr && a.date<=toStr).map(()=>49));
+    out.push({ label, from:fromStr, to:toStr, average: avg(vals), count: vals.length });
+  }
+  return out;
+}
+
+function subjectGradeStats(subjectId){
+  const list = Store.data.grades.filter(g=>g.subjectId===subjectId);
+  const penalties = Store.unworkedAbsences().filter(a=>a.subjectId===subjectId).map(()=>49);
+  const vals = list.map(g=>g.value).concat(penalties);
+  return { count: vals.length, average: avg(vals) };
+}
+
+// overall average across all subjects, including unworked 'Н' as 49-point penalties
+function overallAverageWithPenalties(){
+  const vals = Store.data.grades.map(g=>g.value).concat(Store.unworkedAbsences().map(()=>49));
+  return avg(vals);
+}
+
+function trendArrow(curr, prev){
+  if(curr == null || prev == null) return null;
+  const diff = curr - prev;
+  if(Math.abs(diff) < 1) return { dir:'flat', diff };
+  return { dir: diff > 0 ? 'up' : 'down', diff };
+}
+
+function formatDayLabel(dateStr){
+  const today = fmtDate(new Date());
+  const tmr = fmtDate(addDays(new Date(),1));
+  if(dateStr === today) return 'сегодня';
+  if(dateStr === tmr) return 'завтра';
+  const d = parseDateStr(dateStr);
+  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+
+/* ===== ui.js ===== */
+/* =========================================================
+   Paira — UI helpers (modals, toasts, small reusable bits)
+   ========================================================= */
+
+const Icons = {
+  close: `<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  chevronLeft: `<svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  doc: `<svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h8l4 4V20a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12h6M9 15.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M8 3v4M16 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4.3l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  cup: `<svg viewBox="0 0 24 24" fill="none"><path d="M5 8h11v6a4.5 4.5 0 0 1-4.5 4.5h-2A4.5 4.5 0 0 1 5 14V8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M16 9.5h1.5a2.5 2.5 0 0 1 0 5H16" stroke="currentColor" stroke-width="1.7"/><path d="M8 4.5v1.2M11 4.5v1.2M14 4.5v1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  users: `<svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 19c1-3.2 3-4.8 5.5-4.8s4.5 1.6 5.5 4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M15.5 6a3 3 0 0 1 0 5.8M19 19c-.5-2.4-1.6-3.9-3.2-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  bell: `<svg viewBox="0 0 24 24" fill="none"><path d="M6 10.5a6 6 0 0 1 12 0c0 3.4 1 5 1.5 5.5H4.5C5 15.5 6 13.9 6 10.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5M18.4 18.4l-1.5-1.5M7.1 7.1 5.6 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  book: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`,
+  slider: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="7" r="2.2" stroke="currentColor" stroke-width="1.8"/><circle cx="8" cy="17" r="2.2" stroke="currentColor" stroke-width="1.8"/></svg>`,
+  ban: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M6.5 6.5l11 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  swap: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 8h13l-3-3M20 16H7l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  logo: `<svg viewBox="0 0 24 24"><rect x="5" y="5.5" width="6.4" height="13" rx="3.2" fill="currentColor"/><rect x="12.6" y="5.5" width="6.4" height="13" rx="3.2" fill="currentColor" opacity="0.55"/></svg>`,
+  star: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.6 6 .7-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6-4.4-4.2 6-.7L12 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  copy: `<svg viewBox="0 0 24 24" fill="none"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 15V6.5A2 2 0 0 1 7.5 4.5H16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`
+};
+
+function toast(msg){
+  const root = document.getElementById('toastRoot');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 1800);
+}
+
+// Modals stack: openModal() always pushes a new layer on top of whatever
+// is already open (so a picker can sit on top of a form without losing
+// it). closeModal() pops just the top layer, revealing whatever was
+// beneath. updateTopModal() rewrites the topmost layer's content in
+// place — used by dialogs that redraw themselves (tab switches, month
+// navigation, list refreshes) without disturbing anything stacked below
+// them or pushing a duplicate layer.
+const ModalStack = [];
+
+function openModal(innerHTML, onMount){
+  const root = document.getElementById('modalRoot');
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `<div class="modal-sheet"><div class="modal-grabber"></div><div class="modal-sheet-inner">${innerHTML}</div></div>`;
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+  root.appendChild(overlay);
+  ModalStack.push(overlay);
+  if(onMount) onMount(overlay);
+  return overlay;
+}
+
+function closeModal(){
+  const top = ModalStack.pop();
+  if(top) top.remove();
+}
+
+function closeAllModals(){
+  while(ModalStack.length) ModalStack.pop().remove();
+}
+
+function updateTopModal(innerHTML, onMount){
+  const top = ModalStack[ModalStack.length-1];
+  if(!top) return openModal(innerHTML, onMount);
+  top.querySelector('.modal-sheet-inner').innerHTML = innerHTML;
+  if(onMount) onMount(top);
+}
+
+function confirmDialog(title, desc, confirmLabel, onConfirm, danger){
+  openModal(`
+    <div class="modal-title">${title}</div>
+    <p style="color:var(--text-secondary); font-size:14px; line-height:1.5; margin:-8px 0 20px;">${desc}</p>
+    <button class="btn-primary ${danger?'danger':''}" id="confirmBtn">${confirmLabel}</button>
+    <button class="btn-secondary" id="cancelBtn">Отмена</button>
+  `, (ov)=>{
+    ov.querySelector('#confirmBtn').onclick = ()=>{ closeModal(); onConfirm(); };
+    ov.querySelector('#cancelBtn').onclick = closeModal;
+  });
+}
+
+function subjectDot(color){ return `<span class="dot" style="background:${color}"></span>`; }
+
+function renderSubjectPickerList(onPick, extraHTML){
+  const subs = Store.data.subjects;
+  if(subs.length === 0){
+    return `<div class="empty-state" style="padding:24px 4px;"><div class="emoji">📚</div><div class="title">Пока нет предметов</div><div class="desc">Добавь первый предмет — это займёт 10 секунд</div></div>`;
+  }
+  const recent = Store.data.recentSubjects || [];
+  const sorted = subs.slice().sort((a,b)=>{
+    const ra = recent.indexOf(a.id), rb = recent.indexOf(b.id);
+    if(ra===-1 && rb===-1) return 0;
+    if(ra===-1) return 1;
+    if(rb===-1) return -1;
+    return ra-rb;
+  });
+  return sorted.map(s => `
+    <div class="subject-picker-item" data-subject-id="${s.id}" style="cursor:pointer;">
+      <div class="sw" style="background:${s.color}"></div>
+      <div style="flex:1;">
+        <div class="sname">${escapeHTML(s.name)}</div>
+        <div class="smeta">${[s.teacher, s.room ? 'Каб. '+s.room : ''].filter(Boolean).join(' · ')}</div>
+      </div>
+      ${Icons.chevron}
+    </div>
+  `).join('');
+}
+
+function escapeHTML(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function subjectShort(name){
+  const words = (name||'?').trim().split(/\s+/);
+  if(words.length === 1) return words[0].slice(0,2).toUpperCase();
+  return (words[0][0]+words[1][0]).toUpperCase();
+}
+
+function attLabel(status){
+  return status==='present' ? 'Был' : status==='absent' ? 'Н' : status==='excused' ? 'Уважительная' : '';
+}
+
+// Shared quick-mark modal for a single lesson's attendance (Был / Н / Уважительная причина)
+function openAttendanceModal(ds, l, onDone){
+  const subj = Store.getSubject(l.subjectId);
+  const att = Store.getAttendance(ds, l.n);
+  openModal(`
+    <div class="modal-title">Посещение<button class="close-x" id="closeX">${Icons.close}</button></div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+      <div class="hw-swatch" style="background:${subj?subj.color:'#ccc'}">${subjectShort(subj?subj.name:'?')}</div>
+      <div>
+        <div style="font-weight:800; font-size:15px;">${escapeHTML(subj?subj.name:'—')}</div>
+        <div style="font-size:12.5px; color:var(--text-secondary);">Пара ${l.n} · ${formatDayLabel(ds)}</div>
+      </div>
+    </div>
+    <div class="pill-select" id="attPick">
+      <span class="pill-opt ${att&&att.status==='present'?'active':''}" data-att="present">Был</span>
+      <span class="pill-opt ${att&&att.status==='absent'?'active':''}" data-att="absent">Н</span>
+      <span class="pill-opt ${att&&att.status==='excused'?'active':''}" data-att="excused">Уважительная</span>
+    </div>
+    ${att && att.status==='absent' ? `<label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13.5px; color:var(--text-secondary);"><input type="checkbox" id="workedChk" ${att.worked?'checked':''}> Отработано (не портит балл)</label>` : ''}
+    ${att ? `<button class="btn-secondary" id="clearAttBtn" style="margin-top:16px;">Убрать отметку</button>` : ''}
+  `, (ov)=>{
+    ov.querySelector('#closeX').onclick = closeModal;
+    ov.querySelectorAll('[data-att]').forEach(el=>{
+      el.onclick = () => {
+        Store.setAttendance(ds, l.n, l.subjectId, el.dataset.att);
+        closeModal();
+        toast('Отмечено: ' + attLabel(el.dataset.att));
+        if(onDone) onDone();
+      };
+    });
+    const wc = ov.querySelector('#workedChk');
+    if(wc) wc.onchange = () => { Store.toggleWorked(Store.attKey(ds, l.n)); };
+    const clearBtn = ov.querySelector('#clearAttBtn');
+    if(clearBtn) clearBtn.onclick = () => {
+      Store.setAttendance(ds, l.n, l.subjectId, null);
+      closeModal();
+      toast('Отметка убрана');
+      if(onDone) onDone();
+    };
+  });
+}
+
+
+/* ===== onboarding.js ===== */
+/* =========================================================
+   Paira — Onboarding wizard
+   ========================================================= */
+
+const Onb = {
+  step: 0,
+  totalSteps: 5,
+
+  start(){
+    document.getElementById('bottomNav').classList.add('hidden');
+    this.renderSplash();
+  },
+
+  renderSplash(){
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="onb-wrap">
+        <div>
+          <div class="onb-logo">
+            ${Icons.logo.replace('currentColor','#fff')}
+          </div>
+          <div class="onb-title">Paira</div>
+          <p class="onb-desc">Твоё расписание, время пар и домашние задания в одном месте</p>
+        </div>
+        <div class="onb-actions">
+          <button class="btn-primary" id="startBtn">Начать</button>
+          <button class="onb-skip" id="skipBtn">Я уже с вами</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('startBtn').onclick = () => { this.step = 0; this.renderStep(); };
+    document.getElementById('skipBtn').onclick = () => {
+      Store.data.profile.onboarded = true;
+      Store.save();
+      App.boot();
+    };
+  },
+
+  wrap(inner){
+    const dots = Array.from({length:this.totalSteps}).map((_,i)=>`<div class="d ${i<=this.step?'done':''}"></div>`).join('');
+    return `
+      <div class="screen" style="padding-top:26px;">
+        <div class="wizard-step">Шаг ${this.step+1} из ${this.totalSteps}</div>
+        <div class="wizard-dots">${dots}</div>
+        ${inner}
+      </div>
+    `;
+  },
+
+  renderStep(){
+    const app = document.getElementById('app');
+    if(this.step === 0) app.innerHTML = this.wrap(this.stepProfile());
+    else if(this.step === 1) app.innerHTML = this.wrap(this.stepDays());
+    else if(this.step === 2) app.innerHTML = this.wrap(this.stepTemplate());
+    else if(this.step === 3) app.innerHTML = this.wrap(this.stepSubjects());
+    else if(this.step === 4) app.innerHTML = this.wrap(this.stepFill());
+    this.bindStep();
+  },
+
+  next(){ this.step++; if(this.step >= this.totalSteps) this.finish(); else this.renderStep(); },
+  back(){ if(this.step>0){ this.step--; this.renderStep(); } },
+
+  finish(){
+    Store.data.profile.onboarded = true;
+    Store.save();
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="onb-wrap">
+        <div>
+          <div class="onb-logo">${Icons.check.replace('currentColor','#fff')}</div>
+          <div class="onb-title">Готово</div>
+          <p class="onb-desc">Добро пожаловать в Paira. Твоё расписание уже настроено.</p>
+        </div>
+        <div class="onb-actions"><button class="btn-primary" id="goBtn">Погнали</button></div>
+      </div>`;
+    document.getElementById('goBtn').onclick = () => App.boot();
+  },
+
+  // ---------------- Step 1: profile ----------------
+  stepProfile(){
+    const p = Store.data.profile;
+    return `
+      <div class="modal-title" style="margin-bottom:6px;">О тебе</div>
+      <p style="color:var(--text-secondary); font-size:13.5px; margin:0 0 18px;">Это поможет узнавать твоё расписание с первого взгляда</p>
+      <div class="field"><label>Имя (необязательно)</label><input type="text" id="fName" value="${escapeHTML(p.name)}" placeholder="Как к тебе обращаться"></div>
+      <div class="field"><label>Группа</label><input type="text" id="fGroup" value="${escapeHTML(p.group)}" placeholder="Например, ИС-21"></div>
+      <div class="field"><label>Колледж (необязательно)</label><input type="text" id="fCollege" value="${escapeHTML(p.college)}" placeholder="Название колледжа"></div>
+      <button class="btn-primary" id="nextBtn">Далее</button>
+    `;
+  },
+
+  // ---------------- Step 2: study days ----------------
+  stepDays(){
+    const order = ['mon','tue','wed','thu','fri','sat','sun'];
+    return `
+      <div class="modal-title" style="margin-bottom:6px;">Учебные дни</div>
+      <p style="color:var(--text-secondary); font-size:13.5px; margin:0 0 18px;">Выбери дни, когда у тебя обычно есть пары</p>
+      <div class="pill-select" id="daysPick">
+        ${order.map(d=>`<span class="pill-opt ${Store.data.studyDays.includes(d)?'active':''}" data-day="${d}">${WEEKDAY_LABELS_FULL[d]}</span>`).join('')}
+      </div>
+      <button class="btn-primary" id="nextBtn" style="margin-top:22px;">Далее</button>
+    `;
+  },
+
+  // ---------------- Step 3: time template ----------------
+  stepTemplate(){
+    const slots = Store.data.timeTemplates.regular;
+    return `
+      <div class="modal-title" style="margin-bottom:6px;">Время пар</div>
+      <p style="color:var(--text-secondary); font-size:13.5px; margin:0 0 14px;">Задай время один раз — дальше просто выбираешь предметы</p>
+      <div id="slotsWrap">
+        ${slots.map(s=>this.slotRow(s)).join('')}
+      </div>
+      <button class="btn-secondary" id="addSlotBtn" style="margin-bottom:18px;">${Icons.plus} Добавить пару</button>
+      <button class="btn-primary" id="nextBtn">Далее</button>
+    `;
+  },
+
+  slotRow(s){
+    return `
+      <div class="slot-row" data-n="${s.n}">
+        <div class="slot-num">${s.n}</div>
+        <div class="slot-times">
+          <input type="time" value="${s.start}" data-field="start" data-n="${s.n}">
+          <input type="time" value="${s.end}" data-field="end" data-n="${s.n}">
+        </div>
+        <button class="slot-remove" data-remove="${s.n}">${Icons.close}</button>
+      </div>`;
+  },
+
+  // ---------------- Step 4: subjects ----------------
+  stepSubjects(){
+    return `
+      <div class="modal-title" style="margin-bottom:6px;">Твои предметы</div>
+      <p style="color:var(--text-secondary); font-size:13.5px; margin:0 0 14px;">Добавь предметы, которые у тебя есть</p>
+      <div class="field"><input type="text" id="newSubjName" placeholder="Название предмета"></div>
+      <div class="color-select" id="colorPick" style="margin-bottom:14px;">
+        ${SUBJECT_COLORS.map((c,i)=>`<span class="color-dot ${i===0?'active':''}" style="background:${c}" data-color="${c}"></span>`).join('')}
+      </div>
+      <button class="btn-secondary" id="addSubjBtn" style="margin-bottom:18px;">${Icons.plus} Добавить предмет</button>
+      <div id="subjList">${this.subjTagsHTML()}</div>
+      <button class="btn-primary" id="nextBtn" style="margin-top:18px;">Далее</button>
+    `;
+  },
+
+  subjTagsHTML(){
+    if(Store.data.subjects.length===0) return `<p style="color:var(--text-tertiary); font-size:13px;">Пока пусто</p>`;
+    return Store.data.subjects.map(s=>`<span class="subj-tag"><span class="sd" style="background:${s.color}"></span>${escapeHTML(s.name)}</span>`).join('');
+  },
+
+  // ---------------- Step 5: quick fill ----------------
+  fillDayIdx: 0,
+  stepFill(){
+    this.fillDayIdx = 0;
+    return `<div id="fillWrap"></div>`;
+  },
+
+  renderFillDay(){
+    const days = Store.data.studyDays;
+    if(days.length===0){
+      document.getElementById('fillWrap').innerHTML = `
+        <div class="modal-title" style="margin-bottom:6px;">Расписание</div>
+        <p style="color:var(--text-secondary); font-size:13.5px;">Учебные дни не выбраны — пропускаем этот шаг.</p>
+        <button class="btn-primary" id="nextBtn" style="margin-top:18px;">Завершить</button>`;
+      document.getElementById('nextBtn').onclick = () => this.next();
+      return;
+    }
+    const wd = days[this.fillDayIdx];
+    const template = Store.data.timeTemplates.regular;
+    const current = Store.getLessonsForWeekday(wd);
+    const wrap = document.getElementById('fillWrap');
+    wrap.innerHTML = `
+      <div class="modal-title" style="margin-bottom:2px;">${WEEKDAY_LABELS_FULL[wd]}</div>
+      <p style="color:var(--text-secondary); font-size:13px; margin:0 0 14px;">День ${this.fillDayIdx+1} из ${days.length}</p>
+      <div id="dayFillSlots">
+        ${template.map(t=>{
+          const ex = current.find(c=>c.n===t.n);
+          const subj = ex ? Store.getSubject(ex.subjectId) : null;
+          return `
+          <div class="day-slot" data-n="${t.n}">
+            <div class="dnum">${t.n}</div>
+            <div style="flex:1;">
+              <div class="dselect ${subj?'filled':''}" data-pick="${t.n}">${subj ? escapeHTML(subj.name) : 'Выбрать предмет'}</div>
+              <div class="dtime">${t.start} – ${t.end}</div>
+            </div>
+            ${subj ? `<button class="dremove" data-clear="${t.n}">${Icons.close}</button>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <button class="btn-primary" id="nextBtn" style="margin-top:8px;">${this.fillDayIdx < days.length-1 ? 'Следующий день' : 'Завершить'}</button>
+      ${this.fillDayIdx>0 ? `<button class="btn-secondary" id="backDayBtn">Назад</button>` : ''}
+    `;
+    wrap.querySelectorAll('[data-pick]').forEach(el=>{
+      el.onclick = () => {
+        const n = Number(el.dataset.pick);
+        openSubjectPickerModal((subjectId)=>{
+          Store.setLessonSubject(wd, n, subjectId);
+          this.renderFillDay();
+        });
+      };
+    });
+    wrap.querySelectorAll('[data-clear]').forEach(el=>{
+      el.onclick = (e) => { e.stopPropagation(); Store.setLessonSubject(wd, Number(el.dataset.clear), null); this.renderFillDay(); };
+    });
+    document.getElementById('nextBtn').onclick = () => {
+      if(this.fillDayIdx < days.length-1){ this.fillDayIdx++; this.renderFillDay(); }
+      else this.next();
+    };
+    if(this.fillDayIdx>0){
+      document.getElementById('backDayBtn').onclick = () => { this.fillDayIdx--; this.renderFillDay(); };
+    }
+  },
+
+  bindStep(){
+    if(this.step === 0){
+      document.getElementById('nextBtn').onclick = () => {
+        Store.data.profile.name = document.getElementById('fName').value.trim();
+        Store.data.profile.group = document.getElementById('fGroup').value.trim();
+        Store.data.profile.college = document.getElementById('fCollege').value.trim();
+        Store.save();
+        this.next();
+      };
+    } else if(this.step === 1){
+      document.querySelectorAll('#daysPick .pill-opt').forEach(el=>{
+        el.onclick = () => {
+          const d = el.dataset.day;
+          const set = new Set(Store.data.studyDays);
+          if(set.has(d)) set.delete(d); else set.add(d);
+          Store.data.studyDays = Array.from(set);
+          Store.save();
+          el.classList.toggle('active');
+        };
+      });
+      document.getElementById('nextBtn').onclick = () => this.next();
+    } else if(this.step === 2){
+      const rebind = () => {
+        document.querySelectorAll('#slotsWrap input[type="time"]').forEach(inp=>{
+          inp.onchange = () => {
+            const n = Number(inp.dataset.n);
+            const row = inp.closest('.slot-row');
+            const start = row.querySelector('[data-field="start"]').value;
+            const end = row.querySelector('[data-field="end"]').value;
+            if(end <= start){ toast('Окончание должно быть позже начала'); return; }
+            Store.setTemplateSlot('regular', n, start, end);
+          };
+        });
+        document.querySelectorAll('#slotsWrap .slot-remove').forEach(btn=>{
+          btn.onclick = () => { Store.removeTemplateSlot('regular', Number(btn.dataset.remove)); refreshSlots(); };
+        });
+      };
+      const refreshSlots = () => {
+        document.getElementById('slotsWrap').innerHTML = Store.data.timeTemplates.regular.map(s=>this.slotRow(s)).join('');
+        rebind();
+      };
+      rebind();
+      document.getElementById('addSlotBtn').onclick = () => { Store.addTemplateSlot('regular'); refreshSlots(); };
+      document.getElementById('nextBtn').onclick = () => this.next();
+    } else if(this.step === 3){
+      let color = SUBJECT_COLORS[0];
+      document.querySelectorAll('#colorPick .color-dot').forEach(d=>{
+        d.onclick = () => { document.querySelectorAll('#colorPick .color-dot').forEach(x=>x.classList.remove('active')); d.classList.add('active'); color = d.dataset.color; };
+      });
+      document.getElementById('addSubjBtn').onclick = () => {
+        const inp = document.getElementById('newSubjName');
+        if(!inp.value.trim()){ toast('Введи название предмета'); return; }
+        Store.addSubject({ name: inp.value, color });
+        inp.value = '';
+        document.getElementById('subjList').innerHTML = this.subjTagsHTML();
+      };
+      document.getElementById('nextBtn').onclick = () => this.next();
+    } else if(this.step === 4){
+      this.renderFillDay();
+    }
+  }
+};
+
+function openSubjectPickerModal(onPick){
+  const render = (ov) => {
+    ov.querySelector('#pickerList').innerHTML = renderSubjectPickerList();
+    ov.querySelectorAll('[data-subject-id]').forEach(el=>{
+      el.onclick = () => { Store.touchRecentSubject(el.dataset.subjectId); closeModal(); onPick(el.dataset.subjectId); };
+    });
+  };
+  openModal(`
+    <div class="modal-title">Выбери предмет<button class="close-x" id="closeX">${Icons.close}</button></div>
+    <div id="pickerList">${renderSubjectPickerList()}</div>
+    <button class="btn-secondary" id="quickAddSubjBtn" style="margin-top:10px;">${Icons.plus} Новый предмет</button>
+  `, (ov)=>{
+    ov.querySelector('#closeX').onclick = closeModal;
+    render(ov);
+    ov.querySelector('#quickAddSubjBtn').onclick = () => {
+      openQuickSubjectForm((subj)=>{
+        Store.touchRecentSubject(subj.id);
+        closeModal();
+        onPick(subj.id);
+      });
+    };
+  });
+}
+
+// Lightweight subject-creation form used from pickers (doesn't disturb Profile's modal stack)
+function openQuickSubjectForm(onSaved){
+  let color = SUBJECT_COLORS[Store.data.subjects.length % SUBJECT_COLORS.length];
+  openModal(`
+    <div class="modal-title">Новый предмет<button class="close-x" id="closeX">${Icons.close}</button></div>
+    <div class="field"><label>Название</label><input type="text" id="qsName" placeholder="Например, Математика"></div>
+    <div class="field">
+      <label>Цвет</label>
+      <div class="color-select" id="qsColorPick">
+        ${SUBJECT_COLORS.map(c=>`<span class="color-dot ${c===color?'active':''}" style="background:${c}" data-color="${c}"></span>`).join('')}
+      </div>
+    </div>
+    <button class="btn-primary" id="qsSaveBtn">Сохранить</button>
+  `, (ov)=>{
+    ov.querySelector('#closeX').onclick = closeModal;
+    ov.querySelectorAll('#qsColorPick .color-dot').forEach(d=>{
+      d.onclick = () => { ov.querySelectorAll('#qsColorPick .color-dot').forEach(x=>x.classList.remove('active')); d.classList.add('active'); color = d.dataset.color; };
+    });
+    ov.querySelector('#qsSaveBtn').onclick = () => {
+      const name = ov.querySelector('#qsName').value.trim();
+      if(!name){ toast('Введи название предмета'); return; }
+      const subj = Store.addSubject({ name, color });
+      closeModal();
+      onSaved(subj);
+    };
+  });
+}
+
+
+/* ===== screen-home.js ===== */
+/* =========================================================
+   Paira — Home screen
+   ========================================================= */
+
+const Home = {
+  _tickHandle: null,
+  _lastSig: null,
+
+  mount(container){
+    this.container = container;
+    this.render();
+    if(this._tickHandle) clearInterval(this._tickHandle);
+    this._tickHandle = setInterval(()=>this.tick(), 1000);
+  },
+
+  unmount(){
+    if(this._tickHandle){ clearInterval(this._tickHandle); this._tickHandle = null; }
+  },
+
+  tick(){
+    const status = getCurrentStatus(new Date());
+    const sig = status.state + '|' + (status.lesson?status.lesson.n:'') + '|' + status.dateStr + '|' + (status.next?status.next.n:'');
+    if(sig !== this._lastSig){
+      this.render();
+      return;
+    }
+    // same state — just patch the live numbers
+    this.patchTimer(status);
+  },
+
+  patchTimer(status){
+    const timerEl = document.getElementById('heroTimer');
+    if(!timerEl) return;
+    if(['in-lesson','break','window','before-day'].includes(status.state)){
+      timerEl.textContent = formatCountdown(status.secondsLeft);
+    }
+    if(status.state === 'in-lesson'){
+      const ringFill = document.getElementById('ringFill');
+      const ringPct = document.getElementById('ringPct');
+      if(ringFill){
+        const pct = Math.min(1, Math.max(0, status.progress));
+        const c = 2*Math.PI*32;
+        ringFill.style.strokeDasharray = `${c}`;
+        ringFill.style.strokeDashoffset = `${c*(1-pct)}`;
+      }
+      if(ringPct) ringPct.textContent = Math.round(status.progress*100) + '%';
+    }
+    const nextRel = document.getElementById('nextRel');
+    if(nextRel && status.next){
+      nextRel.textContent = 'Через ' + formatMinutesRel(status.secondsLeft);
+    }
+  },
+
+  render(){
+    const status = getCurrentStatus(new Date());
+    this._lastSig = status.state + '|' + (status.lesson?status.lesson.n:'') + '|' + status.dateStr + '|' + (status.next?status.next.n:'');
+    const now = new Date();
+    const wdRaw = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'][now.getDay()];
+    const weekdayFull = wdRaw.charAt(0).toUpperCase() + wdRaw.slice(1);
+    const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+    let html = `
+      <div class="topbar">
+        <div>
+          <h1>Сегодня</h1>
+          <div class="sub">${weekdayFull}, ${now.getDate()} ${months[now.getMonth()]}</div>
+        </div>
+        <button class="icon-btn" id="calBtn">${Icons.calendar}</button>
+      </div>
+      <div class="screen" style="padding-top:2px;">
+        ${this.renderHero(status)}
+        ${this.renderQuickStats()}
+        ${this.renderList(status)}
+      </div>
+    `;
+    this.container.innerHTML = html;
+    document.getElementById('calBtn').onclick = () => openCalendarModal();
+    this.bindListEvents(status);
+  },
+
+  renderQuickStats(){
+    const overallAvg = overallAverageWithPenalties();
+    const unworkedCount = Store.unworkedAbsences().length;
+    const nextHw = Store.data.homework.filter(h=>!h.done).sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999'))[0];
+    if(overallAvg==null && unworkedCount===0 && !nextHw) return '';
+    return `
+      <div class="stat-grid" style="margin-top:14px;">
+        <div class="stat-card">
+          <div class="k">Средний балл</div>
+          <div class="v">${overallAvg!=null?Math.round(overallAvg):'—'}</div>
+          ${overallAvg!=null?`<div class="mark-chip" style="color:${markColor(overallAvg)}">оценка ${markFromScore(overallAvg)}</div>`:''}
+        </div>
+        <div class="stat-card" id="unworkedCard" ${unworkedCount>0?'style="cursor:pointer;"':''}>
+          <div class="k">Нужно отработать</div>
+          <div class="v">${unworkedCount}</div>
+          <div class="trend ${unworkedCount>0?'down':'flat'}">${unworkedCount>0?'есть Н':'всё чисто'}</div>
+        </div>
+      </div>
+      ${nextHw ? `
+      <div class="next-card" id="nextHwCard" style="cursor:pointer; margin-top:10px;">
+        <div>
+          <div class="k">Ближайшее ДЗ</div>
+          <div class="v">${escapeHTML((Store.getSubject(nextHw.subjectId)||{}).name||'—')}</div>
+          <div class="t">${escapeHTML(nextHw.text)} · ${nextHw.dueDate?formatDayLabel(nextHw.dueDate):'без срока'}</div>
+        </div>
+        ${Icons.chevron}
+      </div>` : ''}
+    `;
+  },
+
+  renderHero(status){
+    const s = status.state;
+
+    if(s === 'in-lesson'){
+      const subj = Store.getSubject(status.lesson.subjectId);
+      const c = 2*Math.PI*32;
+      const pct = Math.min(1, Math.max(0, status.progress));
+      let nextBlock = '';
+      if(status.next){
+        const nextSubj = Store.getSubject(status.next.subjectId);
+        const isBreak = status.afterNext.type === 'break';
+        nextBlock = `
+          <div class="next-card">
+            <div>
+              <div class="k">${isBreak?'Далее':'Далее'}</div>
+              <div class="v">${isBreak ? 'Перемена' : escapeHTML(nextSubj?nextSubj.name:'—')}</div>
+              <div class="t">${status.afterNext.start} до ${status.afterNext.end}</div>
+            </div>
+            <span class="badge" id="nextRel2">${isBreak?'':''}</span>
+          </div>`;
+      } else {
+        nextBlock = `
+          <div class="next-card">
+            <div><div class="k">Далее</div><div class="v">Пары закончатся</div><div class="t">в ${status.lesson.end}</div></div>
+          </div>`;
+      }
+      return `
+        <div class="hero-card">
+          <span class="pill live"><span class="dot"></span>Сейчас</span>
+          <div class="hero-title">${escapeHTML(subj?subj.name:'Пара')}</div>
+          <div class="hero-meta">Пара ${status.lesson.n} · ${status.lesson.start} до ${status.lesson.end}${subj&&subj.room?(' · Каб. '+escapeHTML(subj.room)):''}</div>
+          <div class="hero-body">
+            <div>
+              <div class="hero-timer-label">Осталось</div>
+              <div class="hero-timer" id="heroTimer">${formatCountdown(status.secondsLeft)}</div>
+            </div>
+            <div class="ring-wrap">
+              <svg viewBox="0 0 72 72">
+                <circle class="ring-track" cx="36" cy="36" r="32"/>
+                <circle class="ring-fill" id="ringFill" cx="36" cy="36" r="32" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct)}"/>
+              </svg>
+              <div class="ring-pct" id="ringPct">${Math.round(pct*100)}%</div>
+            </div>
+          </div>
+        </div>
+        ${nextBlock}
+      `;
+    }
+
+    if(s === 'break' || s === 'window'){
+      const nextSubj = Store.getSubject(status.next.subjectId);
+      const label = s === 'break' ? 'Перемена' : 'Окно';
+      return `
+        <div class="hero-card">
+          <span class="pill live"><span class="dot"></span>Сейчас</span>
+          <div class="hero-title">${label}</div>
+          <div class="hero-meta">${status.rangeStart} до ${status.rangeEnd}</div>
+          <div class="hero-body">
+            <div>
+              <div class="hero-timer-label">Осталось</div>
+              <div class="hero-timer" id="heroTimer">${formatCountdown(status.secondsLeft)}</div>
+            </div>
+            <div style="font-size:40px;">${s==='break'?'☕':'🌤️'}</div>
+          </div>
+        </div>
+        <div class="next-card">
+          <div>
+            <div class="k">${s==='break'?'Следующая пара':'Следующая пара'}</div>
+            <div class="v">${escapeHTML(nextSubj?nextSubj.name:'—')}</div>
+            <div class="t">${status.next.start} до ${status.next.end}</div>
+          </div>
+          <span class="badge" id="nextRel">Через ${formatMinutesRel(status.secondsLeft)}</span>
+        </div>
+      `;
+    }
+
+    if(s === 'before-day'){
+      const subj = Store.getSubject(status.lesson.subjectId);
+      return `
+        <div class="hero-card">
+          <span class="pill"><span class="dot"></span>До первой пары</span>
+          <div class="hero-title">${escapeHTML(subj?subj.name:'Пара')}</div>
+          <div class="hero-meta">${status.lesson.start} до ${status.lesson.end}</div>
+          <div class="hero-body">
+            <div>
+              <div class="hero-timer-label">До начала</div>
+              <div class="hero-timer" id="heroTimer">${formatCountdown(status.secondsLeft)}</div>
+            </div>
+            <div style="font-size:40px;">⏰</div>
+          </div>
+        </div>
+      `;
+    }
+
+    if(s === 'after-day'){
+      const ns = status.nextStudy;
+      return `
+        <div class="hero-card neutral">
+          <span class="pill">На сегодня всё</span>
+          <div class="hero-title">Все пары закончились</div>
+          <div class="hero-meta">Можно выдохнуть 🙂</div>
+        </div>
+        ${ns ? `
+        <div class="next-card">
+          <div>
+            <div class="k">Следующая пара</div>
+            <div class="v">${ns.isTomorrow?'Завтра':formatDayLabel(ns.dateStr)} в ${ns.firstLesson.start}</div>
+            <div class="t">${(Store.getSubject(ns.firstLesson.subjectId)||{}).name||''}</div>
+          </div>
+        </div>` : ''}
+      `;
+    }
+
+    if(s === 'weekend'){
+      const ns = status.nextStudy;
+      return `
+        <div class="hero-card neutral">
+          <span class="pill">Сегодня выходной</span>
+          <div class="hero-title">Пар нет</div>
+          <div class="hero-meta">Отдыхай спокойно</div>
+        </div>
+        ${ns ? `
+        <div class="next-card">
+          <div>
+            <div class="k">Следующая пара</div>
+            <div class="v">${WEEKDAY_LABELS_FULL[weekdayKey(ns.date)]}</div>
+            <div class="t">${ns.firstLesson.start}</div>
+          </div>
+        </div>` : ''}
+      `;
+    }
+
+    if(s === 'holiday'){
+      return `
+        <div class="hero-card neutral">
+          <span class="pill" style="background:var(--warning-soft); color:#B5730A;">Праздник</span>
+          <div class="hero-title">Сегодня праздник</div>
+          <div class="hero-meta">Занятий нет</div>
+        </div>
+        ${this.nextStudyCard(status.nextStudy)}
+      `;
+    }
+
+    if(s === 'sick'){
+      return `
+        <div class="hero-card neutral">
+          <span class="pill" style="background:var(--danger-soft); color:#C23854;">Больничный</span>
+          <div class="hero-title">Сегодня больничный</div>
+          <div class="hero-meta">${status.sickLeave && status.sickLeave.reason ? escapeHTML(status.sickLeave.reason) : 'Пары на сегодня отменены'}</div>
+        </div>
+        ${this.nextStudyCard(status.nextStudy)}
+      `;
+    }
+
+    if(s === 'personal'){
+      return `
+        <div class="hero-card neutral">
+          <span class="pill">Отдых</span>
+          <div class="hero-title">Личный выходной</div>
+          <div class="hero-meta">Ты сам выбрал этот день для отдыха</div>
+        </div>
+        ${this.nextStudyCard(status.nextStudy)}
+      `;
+    }
+
+    if(s === 'vacation'){
+      return `
+        <div class="hero-card neutral">
+          <span class="pill" style="background:rgba(74,168,240,0.16); color:var(--info);">Каникулы</span>
+          <div class="hero-title">Занятий нет</div>
+          <div class="hero-meta">${escapeHTML(status.vacation.name)}</div>
+          <div class="next-card" style="margin-top:14px; border:none; background:rgba(255,255,255,0.5); box-shadow:none;">
+            <div><div class="k">До занятий</div><div class="v">${status.daysLeft} ${pluralRu(status.daysLeft,'день','дня','дней')}</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    return '';
+  },
+
+  nextStudyCard(ns){
+    if(!ns) return '';
+    return `
+      <div class="next-card">
+        <div>
+          <div class="k">Следующая пара</div>
+          <div class="v">${ns.isTomorrow ? 'Завтра' : WEEKDAY_LABELS_FULL[weekdayKey(ns.date)]}</div>
+          <div class="t">${ns.firstLesson.start}</div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderList(status){
+    const lessons = status.allLessons;
+    if(!lessons || lessons.length === 0) return '';
+    let rows = '';
+    for(let i=0;i<lessons.length;i++){
+      const l = lessons[i];
+      const subj = Store.getSubject(l.subjectId);
+      const isCurrent = status.state==='in-lesson' && status.lesson.n===l.n;
+      const nowMin = new Date().getHours()*60+new Date().getMinutes();
+      const isPast = !l.cancelled && timeToMinutes(l.end) <= nowMin && !(status.state==='in-lesson'&&status.lesson.n===l.n);
+      const hasHw = subj ? Store.activeHomeworkForSubject(subj.id).length>0 : false;
+      const att = Store.getAttendance(status.dateStr, l.n);
+      rows += `
+        <div class="lesson-row ${isCurrent?'active':''} ${l.cancelled?'cancelled':''}" data-lesson-n="${l.n}">
+          <div class="lesson-num">${l.n}</div>
+          <div class="lesson-time">${l.start}<br>${l.end}</div>
+          <div class="lesson-info">
+            <div class="lesson-subject ${l.cancelled?'lesson-strike':''}">${subjectDot(subj?subj.color:'#ccc')}${escapeHTML(subj?subj.name:'—')}</div>
+            <div class="lesson-sub">${l.cancelled ? 'Отменена' : [subj&&subj.room?('Каб. '+subj.room):'', subj&&subj.teacher].filter(Boolean).join(' · ')}</div>
+          </div>
+          <div class="lesson-right">
+            ${att && !l.cancelled ? `<span style="font-size:11px; font-weight:800; padding:3px 7px; border-radius:8px; background:${att.status==='absent'?(att.worked?'var(--success-soft)':'var(--danger-soft)'):'var(--success-soft)'}; color:${att.status==='absent'?(att.worked?'var(--success)':'var(--danger)'):'var(--success)'};">${att.status==='absent'?(att.worked?'Н✓':'Н'):(att.status==='excused'?'УП':'Был')}</span>` : ''}
+            ${hasHw && !l.cancelled ? `<div class="hw-flag" data-hw-subject="${subj.id}">${Icons.doc}</div>` : ''}
+            <span class="status-dot ${isCurrent?'active':(isPast?'done':'upcoming')}"></span>
+          </div>
+        </div>
+      `;
+      // gap between this lesson and next
+      const next = lessons[i+1];
+      if(next && !l.cancelled && !next.cancelled){
+        const gapMin = timeToMinutes(next.start) - timeToMinutes(l.end);
+        if(gapMin > 0){
+          const isBreak = next.n === l.n+1;
+          if(isBreak){
+            rows += `<div class="gap-row">${Icons.cup} Перемена · ${gapMin} мин</div>`;
+          } else {
+            rows += `<div class="gap-row">${Icons.clock} Окно · ${l.end}–${next.start}</div>`;
+          }
+        }
+      }
+    }
+    return `<div class="section-title">Расписание на сегодня</div>${rows}`;
+  },
+
+  bindListEvents(status){
+    this.container.querySelectorAll('[data-hw-subject]').forEach(el=>{
+      el.onclick = (e) => {
+        e.stopPropagation();
+        App.switchTab('homework', { subjectFilter: el.dataset.hwSubject });
+      };
+    });
+    this.container.querySelectorAll('.lesson-row[data-lesson-n]').forEach(row=>{
+      row.onclick = () => {
+        const n = Number(row.dataset.lessonN);
+        const l = (status.allLessons||[]).find(x=>x.n===n);
+        if(!l || l.cancelled) return;
+        openAttendanceModal(status.dateStr, l, () => this.render());
+      };
+    });
+    const uc = this.container.querySelector('#unworkedCard');
+    if(uc) uc.onclick = () => App.switchTab('grades');
+    const nhc = this.container.querySelector('#nextHwCard');
+    if(nhc) nhc.onclick = () => App.switchTab('homework');
+  }
+};
+
+
+/* ===== screen-schedule.js ===== */
+/* =========================================================
+   Paira — Schedule screen (real dates, this/other weeks)
+   ========================================================= */
+
+const Schedule = {
+  weekOffset: 0,
+  selectedDate: null,
+
+  mount(container){
+    this.container = container;
+    this.selectedDate = fmtDate(new Date());
+    this.weekOffset = 0;
+    this.render();
+  },
+  unmount(){},
+
+  getWeekDates(){
+    const today = new Date();
+    const dow = today.getDay(); // 0 sun .. 6 sat
+    const mondayOffset = (dow === 0 ? -6 : 1 - dow);
+    const monday = addDays(today, mondayOffset + this.weekOffset*7);
+    return Array.from({length:7}).map((_,i)=>addDays(monday, i));
+  },
+
+  render(){
+    const weekDates = this.getWeekDates();
+    const todayStr = fmtDate(new Date());
+    const order = ['mon','tue','wed','thu','fri','sat','sun'];
+
+    const strip = weekDates.map((d,i)=>{
+      const ds = fmtDate(d);
+      const wd = order[i];
+      const isSelected = ds === this.selectedDate;
+      const isToday = ds === todayStr;
+      const isStudy = Store.data.studyDays.includes(wd);
+      return `
+        <div class="week-day ${isSelected?'selected':''} ${isToday?'today':''} ${!isStudy?'off':''}" data-date="${ds}">
+          <div class="wd-name">${WEEKDAY_LABELS_SHORT[wd]}</div>
+          <div class="wd-num">${d.getDate()}</div>
+        </div>`;
+    }).join('');
+
+    this.container.innerHTML = `
+      <div class="topbar">
+        <h1>Расписание</h1>
+        <div style="display:flex; gap:8px;">
+          <button class="icon-btn" id="prevWeek">${Icons.chevronLeft}</button>
+          <button class="icon-btn" id="nextWeek">${Icons.chevron}</button>
+        </div>
+      </div>
+      <div class="screen" style="padding-top:2px;">
+        <div class="week-strip">${strip}</div>
+        <div id="dayContent"></div>
+      </div>
+    `;
+    document.getElementById('prevWeek').onclick = () => { this.weekOffset--; this.render(); };
+    document.getElementById('nextWeek').onclick = () => { this.weekOffset++; this.render(); };
+    this.container.querySelectorAll('.week-day').forEach(el=>{
+      el.onclick = () => { this.selectedDate = el.dataset.date; this.render(); };
+    });
+    this.renderDay();
+  },
+
+  renderDay(){
+    const ds = this.selectedDate;
+    const dayInfo = getDayType(ds);
+    const el = document.getElementById('dayContent');
+    let banner = '';
+    const bannerMap = {
+      vacation: {cls:'vacation', text: 'Каникулы · ' + (dayInfo.vacation ? escapeHTML(dayInfo.vacation.name) : '')},
+      holiday: {cls:'holiday', text: 'Праздник'},
+      sick: {cls:'sick', text: 'Больничный'},
+      personal: {cls:'personal', text: 'Личный выходной'},
+      short: {cls:'short', text: 'Сокращённый день'},
+      weekend: {cls:'weekend', text: 'Выходной'}
+    };
+    if(bannerMap[dayInfo.type]){
+      let bannerText = bannerMap[dayInfo.type].text;
+      if(dayInfo.type==='sick' && dayInfo.sickLeave && dayInfo.sickLeave.reason) bannerText += ' · ' + escapeHTML(dayInfo.sickLeave.reason);
+      banner = `<div class="day-banner ${bannerMap[dayInfo.type].cls}">${bannerText}</div>`;
+    }
+
+    const lessons = getLessonsForDate(ds, dayInfo);
+
+    let list = '';
+    if(lessons.length === 0){
+      list = `<div class="empty-state"><div class="emoji">🗓️</div><div class="title">Пар не запланировано</div><div class="desc">На этот день ничего не добавлено</div></div>`;
+    } else {
+      list = lessons.map(l=>{
+        const subj = Store.getSubject(l.subjectId);
+        const hasHw = subj ? Store.activeHomeworkForSubject(subj.id).length>0 : false;
+        const att = Store.getAttendance(ds, l.n);
+        return `
+          <div class="lesson-row ${l.cancelled?'cancelled':''}" data-open-lesson="${l.n}">
+            <div class="lesson-num">${l.n}</div>
+            <div class="lesson-time">${l.start}<br>${l.end}</div>
+            <div class="lesson-info">
+              <div class="lesson-subject ${l.cancelled?'lesson-strike':''}">${subjectDot(subj?subj.color:'#ccc')}${escapeHTML(subj?subj.name:'—')}</div>
+              <div class="lesson-sub">${l.cancelled ? 'Отменена' : [subj&&subj.room?('Каб. '+subj.room):'', subj&&subj.teacher].filter(Boolean).join(' · ')}</div>
+            </div>
+            <div class="lesson-right">
+              ${att && !l.cancelled ? `<span style="font-size:11px; font-weight:800; padding:3px 7px; border-radius:8px; background:${att.status==='absent'?(att.worked?'var(--success-soft)':'var(--danger-soft)'):'var(--success-soft)'}; color:${att.status==='absent'?(att.worked?'var(--success)':'var(--danger)'):'var(--success)'};">${att.status==='absent'?(att.worked?'Н✓':'Н'):(att.status==='excused'?'УП':'Был')}</span>` : ''}
+              ${hasHw && !l.cancelled ? `<div class="hw-flag">${Icons.doc}</div>` : ''}
+              ${Icons.chevron}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const canEdit = ['regular','short'].includes(dayInfo.type) || lessons.length>0;
+
+    el.innerHTML = `
+      ${banner}
+      ${list}
+      ${canEdit ? `<div class="fab-row"><button class="fab" id="addLessonBtn">${Icons.plus} Добавить пару</button></div>` : ''}
+    `;
+
+    el.querySelectorAll('[data-open-lesson]').forEach(row=>{
+      row.onclick = () => this.openLessonSheet(ds, Number(row.dataset.openLesson), dayInfo);
+    });
+    const addBtn = document.getElementById('addLessonBtn');
+    if(addBtn) addBtn.onclick = () => this.openAddLessonSheet(ds, dayInfo);
+  },
+
+  openAddLessonSheet(ds, dayInfo){
+    const templateKind = dayInfo.type === 'short' ? 'short' : 'regular';
+    const template = Store.data.timeTemplates[templateKind];
+    const existing = getLessonsForDate(ds, dayInfo).map(l=>l.n);
+    const free = template.filter(t => !existing.includes(t.n));
+    if(free.length === 0){ toast('Все пары уже добавлены'); return; }
+    openModal(`
+      <div class="modal-title">Добавить пару<button class="close-x" id="closeX">${Icons.close}</button></div>
+      <div id="slotChoice">
+        ${free.map(t=>`<div class="subject-picker-item" data-n="${t.n}" style="cursor:pointer;"><div class="lesson-num" style="width:30px;height:30px;font-size:12px;">${t.n}</div><div style="flex:1;"><div class="sname">Пара ${t.n}</div><div class="smeta">${t.start} – ${t.end}</div></div>${Icons.chevron}</div>`).join('')}
+      </div>
+    `, (ov)=>{
+      ov.querySelector('#closeX').onclick = closeModal;
+      ov.querySelectorAll('[data-n]').forEach(row=>{
+        row.onclick = () => {
+          const n = Number(row.dataset.n);
+          closeModal();
+          openSubjectPickerModal((subjectId)=>{
+            Store.setOverride(ds, n, { type:'replace', subjectId });
+            this.renderDay();
+            toast('Пара добавлена');
+          });
+        };
+      });
+    });
+  },
+
+  openLessonSheet(ds, n, dayInfo){
+    const lessons = getLessonsForDate(ds, dayInfo);
+    const l = lessons.find(x=>x.n===n);
+    if(!l) return;
+    const subj = Store.getSubject(l.subjectId);
+    const hw = subj ? Store.activeHomeworkForSubject(subj.id) : [];
+    const dayLabel = formatDayLabel(ds);
+
+    openModal(`
+      <div class="modal-title">Пара ${n}<button class="close-x" id="closeX">${Icons.close}</button></div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+        <div class="hw-swatch" style="background:${subj?subj.color:'#ccc'}">${subjectShort(subj?subj.name:'?')}</div>
+        <div>
+          <div style="font-weight:800; font-size:16px; ${l.cancelled?'text-decoration:line-through;color:var(--text-tertiary);':''}">${escapeHTML(subj?subj.name:'—')}</div>
+          <div style="font-size:12.5px; color:var(--text-secondary);">${l.start} – ${l.end}, ${dayLabel}${subj&&subj.room?(' · Каб. '+escapeHTML(subj.room)):''}</div>
+        </div>
+      </div>
+      ${l.cancelled ? `<div class="day-banner sick" style="margin-top:14px;">Пара отменена на этот день</div>` : ''}
+      ${(!l.cancelled && hw.length) ? `<div class="section-title" style="margin-top:14px;">Домашнее задание</div>${hw.map(h=>`<div class="hw-text" style="margin-bottom:6px;">${escapeHTML(h.text)}</div>`).join('')}` : ''}
+      <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+        ${!l.cancelled ? `<button class="btn-secondary" id="attBtn" style="margin-top:0;">${Icons.users} Посещение${(()=>{ const a=Store.getAttendance(ds,l.n); return a?': '+attLabel(a.status):''; })()}</button>` : ''}
+        ${!l.cancelled ? `<button class="btn-secondary" id="rescheduleBtn" style="margin-top:0;">${Icons.swap} Заменить предмет на этот день</button>` : ''}
+        ${!l.cancelled ? `<button class="btn-secondary" id="cancelBtn" style="margin-top:0;">${Icons.ban} Отменить пару</button>` : `<button class="btn-secondary" id="restoreBtn" style="margin-top:0;">Вернуть пару</button>`}
+      </div>
+    `, (ov)=>{
+      ov.querySelector('#closeX').onclick = closeModal;
+      const attBtn = ov.querySelector('#attBtn');
+      if(attBtn) attBtn.onclick = () => {
+        openAttendanceModal(ds, l, () => { closeAllModals(); this.renderDay(); });
+      };
+      const resBtn = ov.querySelector('#rescheduleBtn');
+      if(resBtn) resBtn.onclick = () => {
+        closeModal();
+        openSubjectPickerModal((subjectId)=>{
+          Store.setOverride(ds, n, { type:'replace', subjectId });
+          this.renderDay();
+          toast('Пара изменена на этот день');
+        });
+      };
+      const cBtn = ov.querySelector('#cancelBtn');
+      if(cBtn) cBtn.onclick = () => {
+        Store.setOverride(ds, n, { type:'cancel' });
+        closeModal();
+        this.renderDay();
+        toast('Пара отменена');
+      };
+      const rBtn = ov.querySelector('#restoreBtn');
+      if(rBtn) rBtn.onclick = () => {
+        Store.setOverride(ds, n, null);
+        closeModal();
+        this.renderDay();
+        toast('Пара восстановлена');
+      };
+    });
+  }
+};
+
+
+/* ===== screen-homework.js ===== */
+/* =========================================================
+   Paira — Homework screen
+   ========================================================= */
+
+const Homework = {
+  mode: 'list', // 'list' | 'bysubject'
+  filter: 'all', // 'all' | 'active' | 'done'
+  subjectFilter: null,
+
+  mount(container, opts){
+    this.container = container;
+    if(opts && opts.subjectFilter){ this.subjectFilter = opts.subjectFilter; this.mode = 'list'; this.filter = 'active'; }
+    this.render();
+  },
+  unmount(){},
+
+  dueBadge(dueDate){
+    if(!dueDate) return { text:'Без срока', urgent:false };
+    const today = fmtDate(new Date());
+    const tmr = fmtDate(addDays(new Date(),1));
+    if(dueDate < today) return { text:'Просрочено · ' + formatDayLabel(dueDate), urgent:true };
+    if(dueDate === today) return { text:'Срок сегодня', urgent:true };
+    if(dueDate === tmr) return { text:'Срок завтра', urgent:false };
+    return { text:'Срок: ' + formatDayLabel(dueDate), urgent:false };
+  },
+
+  getFiltered(){
+    let list = Store.data.homework.slice();
+    if(this.subjectFilter) list = list.filter(h=>h.subjectId===this.subjectFilter);
+    if(this.filter === 'active') list = list.filter(h=>!h.done);
+    if(this.filter === 'done') list = list.filter(h=>h.done);
+    list.sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      return (a.dueDate||'9999').localeCompare(b.dueDate||'9999');
+    });
+    return list;
+  },
+
+  render(){
+    const subj = this.subjectFilter ? Store.getSubject(this.subjectFilter) : null;
+    this.container.innerHTML = `
+      <div class="topbar">
+        <h1>${subj ? escapeHTML(subj.name) : 'Домашние задания'}</h1>
+      </div>
+      <div class="screen" style="padding-top:2px;">
+        ${subj ? `<button class="chip" id="clearSubjFilter" style="margin-bottom:12px;">✕ Показать все предметы</button>` : ''}
+        <div class="seg-tabs">
+          <button class="seg-tab ${this.mode==='list'?'active':''}" data-mode="list">Список</button>
+          <button class="seg-tab ${this.mode==='bysubject'?'active':''}" data-mode="bysubject">По предметам</button>
+        </div>
+        ${this.mode==='list' ? `
+        <div class="chip-row">
+          <button class="chip ${this.filter==='all'?'active':''}" data-filter="all">Все</button>
+          <button class="chip ${this.filter==='active'?'active':''}" data-filter="active">Активные</button>
+          <button class="chip ${this.filter==='done'?'active':''}" data-filter="done">Выполненные</button>
+        </div>` : ''}
+        <div id="hwList"></div>
+        <div class="fab-row"><button class="fab" id="addHwBtn">${Icons.plus} Добавить ДЗ</button></div>
+      </div>
+    `;
+    if(subj) document.getElementById('clearSubjFilter').onclick = () => { this.subjectFilter=null; this.filter='all'; this.render(); };
+    this.container.querySelectorAll('[data-mode]').forEach(b=>{
+      b.onclick = () => { this.mode = b.dataset.mode; this.render(); };
+    });
+    this.container.querySelectorAll('[data-filter]').forEach(b=>{
+      b.onclick = () => { this.filter = b.dataset.filter; this.render(); };
+    });
+    document.getElementById('addHwBtn').onclick = () => this.openAddForm();
+    this.renderList();
+  },
+
+  renderList(){
+    const el = document.getElementById('hwList');
+    if(this.mode === 'list'){
+      const list = this.getFiltered();
+      if(list.length===0){
+        el.innerHTML = this.emptyState();
+        return;
+      }
+      el.innerHTML = list.map(h=>this.card(h)).join('');
+    } else {
+      const subs = Store.data.subjects;
+      if(subs.length===0){ el.innerHTML = this.emptyState(); return; }
+      el.innerHTML = subs.map(s=>{
+        const items = Store.data.homework.filter(h=>h.subjectId===s.id).sort((a,b)=>(a.done-b.done) || (a.dueDate||'').localeCompare(b.dueDate||''));
+        if(items.length===0) return '';
+        return `<div class="section-title">${escapeHTML(s.name)}</div>${items.map(h=>this.card(h)).join('')}`;
+      }).join('') || this.emptyState();
+    }
+    this.bindCardEvents();
+  },
+
+  emptyState(){
+    if(this.filter==='done') return `<div class="empty-state"><div class="emoji">✅</div><div class="title">Выполненных нет</div><div class="desc">Пока ничего не отмечено</div></div>`;
+    if(this.filter==='active' && Store.data.homework.length>0) return `<div class="empty-state"><div class="emoji">🎉</div><div class="title">Всё готово</div><div class="desc">Активных заданий нет</div></div>`;
+    return `<div class="empty-state"><div class="emoji">📄</div><div class="title">Домашних заданий нет</div><div class="desc">Нажми «Добавить ДЗ», чтобы создать первое</div></div>`;
+  },
+
+  card(h){
+    const subj = Store.getSubject(h.subjectId);
+    const badge = this.dueBadge(h.dueDate);
+    return `
+      <div class="hw-card" data-hw-id="${h.id}">
+        <div class="hw-swatch" style="background:${subj?subj.color:'#ccc'}">${subjectShort(subj?subj.name:'?')}</div>
+        <div class="hw-body">
+          <div class="hw-top">
+            <div>
+              <div class="hw-subject">${escapeHTML(subj?subj.name:'—')}</div>
+            </div>
+          </div>
+          <div class="hw-text ${h.done?'done':''}">${escapeHTML(h.text)}</div>
+          <div class="hw-due-row">
+            <span class="hw-due ${badge.urgent && !h.done ?'urgent':''}">${badge.text}</span>
+            ${h.priority==='important' ? `<span class="hw-prio">Важно</span>` : ''}
+          </div>
+        </div>
+        <div class="hw-check ${h.done?'checked':''}" data-toggle="${h.id}">${h.done?Icons.check:''}</div>
+      </div>
+    `;
+  },
+
+  bindCardEvents(){
+    this.container.querySelectorAll('[data-toggle]').forEach(el=>{
+      el.onclick = (e) => { e.stopPropagation(); Store.toggleHomeworkDone(el.dataset.toggle); this.renderList(); };
+    });
+    this.container.querySelectorAll('[data-hw-id]').forEach(el=>{
+      el.onclick = () => this.openDetail(el.dataset.hwId);
+    });
+  },
+
+  openDetail(id){
+    const h = Store.data.homework.find(x=>x.id===id);
+    if(!h) return;
+    const subj = Store.getSubject(h.subjectId);
+    openModal(`
+      <div class="modal-title">${escapeHTML(subj?subj.name:'ДЗ')}<button class="close-x" id="closeX">${Icons.close}</button></div>
+      <p style="font-size:14.5px; line-height:1.5; margin:-6px 0 16px;">${escapeHTML(h.text)}</p>
+      <div style="font-size:12.5px; color:var(--text-secondary); margin-bottom:20px;">${this.dueBadge(h.dueDate).text} · Создано ${formatDayLabel(h.createdAt)}</div>
+      <button class="btn-primary" id="toggleDoneBtn">${h.done?'Отметить невыполненным':'Отметить выполненным'}</button>
+      <button class="btn-secondary danger" id="delHwBtn" style="color:var(--danger); border-color:var(--danger-soft);">${Icons.trash} Удалить</button>
+    `, (ov)=>{
+      ov.querySelector('#closeX').onclick = closeModal;
+      ov.querySelector('#toggleDoneBtn').onclick = () => { Store.toggleHomeworkDone(id); closeModal(); this.renderList(); };
+      ov.querySelector('#delHwBtn').onclick = () => {
+        confirmDialog('Удалить задание?', 'Это действие нельзя отменить.', 'Удалить', ()=>{ Store.deleteHomework(id); closeModal(); this.renderList(); }, true);
+      };
+    });
+  },
+
+  openAddForm(){
+    if(Store.data.subjects.length===0){ toast('Сначала добавь предмет в профиле'); return; }
+    let chosenSubject = this.subjectFilter || Store.data.subjects[0].id;
+    let dueChoice = 'today';
+    let customDate = fmtDate(new Date());
+    let priority = 'normal';
+
+    const subjName = () => (Store.getSubject(chosenSubject)||{}).name || 'Выбрать предмет';
+
+    openModal(`
+      <div class="modal-title">Добавить ДЗ<button class="close-x" id="closeX">${Icons.close}</button></div>
+      <div class="field">
+        <label>Предмет</label>
+        <div class="subject-picker-item" id="subjPickRow" style="border:1px solid var(--border); border-radius:14px; padding:12px 14px; cursor:pointer;">
+          <div class="sw" style="background:${(Store.getSubject(chosenSubject)||{}).color||'#ccc'}; width:26px; height:26px;"></div>
+          <div style="flex:1;" id="subjPickLabel">${escapeHTML(subjName())}</div>
+          ${Icons.chevron}
+        </div>
+      </div>
+      <div class="field">
+        <label>Что задали?</label>
+        <textarea id="hwText" placeholder="Напишите домашнее задание"></textarea>
+      </div>
+      <div class="field">
+        <label>Срок</label>
+        <div class="pill-select" id="duePick">
+          <span class="pill-opt active" data-due="today">Сегодня</span>
+          <span class="pill-opt" data-due="tomorrow">Завтра</span>
+          <span class="pill-opt" data-due="custom">Выбрать дату</span>
+        </div>
+        <input type="date" id="customDateInput" value="${customDate}" style="margin-top:10px; display:none;">
+      </div>
+      <div class="field">
+        <label>Приоритет</label>
+        <div class="pill-select" id="prioPick">
+          <span class="pill-opt active" data-prio="normal">Обычный</span>
+          <span class="pill-opt" data-prio="important">Важно</span>
+        </div>
+      </div>
+      <button class="btn-primary" id="saveHwBtn">Сохранить</button>
+    `, (ov)=>{
+      ov.querySelector('#closeX').onclick = closeModal;
+      ov.querySelector('#subjPickRow').onclick = () => {
+        openSubjectPickerModal((subjectId)=>{
+          chosenSubject = subjectId;
+          const s = Store.getSubject(subjectId);
+          ov.querySelector('#subjPickLabel').textContent = s.name;
+          ov.querySelector('#subjPickRow .sw').style.background = s.color;
+        });
+      };
+      ov.querySelectorAll('#duePick .pill-opt').forEach(p=>{
+        p.onclick = () => {
+          ov.querySelectorAll('#duePick .pill-opt').forEach(x=>x.classList.remove('active'));
+          p.classList.add('active');
+          dueChoice = p.dataset.due;
+          ov.querySelector('#customDateInput').style.display = dueChoice==='custom' ? 'block' : 'none';
+        };
+      });
+      ov.querySelector('#customDateInput').onchange = (e) => { customDate = e.target.value; };
+      ov.querySelectorAll('#prioPick .pill-opt').forEach(p=>{
+        p.onclick = () => {
+          ov.querySelectorAll('#prioPick .pill-opt').forEach(x=>x.classList.remove('active'));
+          p.classList.add('active');
+          priority = p.dataset.prio;
+        };
+      });
+      ov.querySelector('#saveHwBtn').onclick = () => {
+        const text = ov.querySelector('#hwText').value.trim();
+        if(!text){ toast('Напиши, что задали'); return; }
+        let dueDate;
+        if(dueChoice==='today') dueDate = fmtDate(new Date());
+        else if(dueChoice==='tomorrow') dueDate = fmtDate(addDays(new Date(),1));
+        else dueDate = customDate;
+        Store.addHomework({ subjectId: chosenSubject, text, dueDate, priority });
+        closeModal();
+        this.renderList();
+        toast('Задание добавлено');
+      };
+    });
+  }
+};
+
+
+/* ===== screen-grades.js ===== */
+/* =========================================================
+   Paira — Grades screen
+   Track marks per subject and see how things are trending
+   week over week / month over month.
+   ========================================================= */
+
+const Grades = {
+  period: 'week', // 'week' | 'month'
+
+  mount(container){
+    this.container = container;
+    this.render();
+  },
+  unmount(){},
+
+  render(){
+    if(Store.data.subjects.length===0 && Store.data.grades.length===0){
+      this.container.innerHTML = `
+        <div class="topbar"><h1>Оценки</h1></div>
+        <div class="screen" style="padding-top:2px;">
+          <div class="empty-state"><div class="emoji">🏆</div><div class="title">Пока нет оценок</div><div class="desc">Сначала добавь хотя бы один предмет в профиле</div></div>
+        </div>
+      `;
+      return;
+    }
+
+    const all = Store.data.grades;
+    const overallAvg = overallAverageWithPenalties();
+    const unworked = Store.unworkedAbsences();
+
+    const buckets = gradeBuckets(this.period, this.period==='week' ? 8 : 6);
+    const lastTwo = buckets.slice(-2);
+    const trend = trendArrow(lastTwo[1] ? lastTwo[1].average : null, lastTwo[0] ? lastTwo[0].average : null);
+    const currentBucket = buckets[buckets.length-1];
+
+    const bySubj = Store.data.subjects.map(s => ({ s, stat: subjectGradeStats(s.id) })).filter(x=>x.stat.count>0)
+      .sort((a,b)=> (b.stat.average||0) - (a.stat.average||0));
+
+    const recent = all.slice().sort((a,b)=> b.date.localeCompare(a.date) || 0).slice(0,12);
+
+    this.container.innerHTML = `
+      <div class="topbar">
+        <h1>Оценки</h1>
+        <button class="icon-btn" id="addGradeBtn">${Icons.plus}</button>
+      </div>
+      <div class="screen" style="padding-top:2px;">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="k">Средний балл</div>
+            <div class="v">${overallAvg!=null ? Math.round(overallAvg) : '—'}</div>
+            ${overallAvg!=null ? `<div class="mark-chip" style="color:${markColor(overallAvg)}">оценка ${markFromScore(overallAvg)}</div>` : ''}
+          </div>
+          <div class="stat-card">
+            <div class="k">${this.period==='week'?'Эта неделя':'Этот месяц'}</div>
+            <div class="v">${currentBucket.average!=null ? Math.round(currentBucket.average) : '—'}</div>
+            ${trend ? `<div class="trend ${trend.dir}">${trend.dir==='up'?'↑':trend.dir==='down'?'↓':'→'} ${trend.dir==='flat'?'без изменений':Math.round(Math.abs(trend.diff))}</div>` : ''}
+          </div>
+        </div>
+
+        <div class="section-title">
+          Динамика
+          <span class="link" id="periodToggle">${this.period==='week'?'По месяцам':'По неделям'}</span>
+        </div>
+        <div class="grade-chart-wrap">${this.renderChart(buckets)}</div>
+
+        ${bySubj.length ? `
+        <div class="section-title">По предметам</div>
+        ${bySubj.map(({s,stat})=>{
+          const pct = Math.max(4, Math.min(100, stat.average));
+          return `<div class="subj-avg-row">
+            <div class="sw" style="background:${s.color}"></div>
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; justify-content:space-between; font-size:13.5px; font-weight:700; margin-bottom:6px;">
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(s.name)}</span>
+                <span style="color:var(--text-secondary); font-weight:700;">${Math.round(stat.average)} <span style="color:${markColor(stat.average)};">· ${markFromScore(stat.average)}</span></span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${s.color};"></div></div>
+            </div>
+          </div>`;
+        }).join('')}
+        ` : ''}
+
+        ${unworked.length ? `
+        <div class="section-title">Нужно отработать <span class="link" style="color:var(--danger);">${unworked.length}</span></div>
+        ${unworked.map(a=>{
+          const s = Store.getSubject(a.subjectId);
+          return `<div class="grade-row">
+            <div class="grade-badge" style="background:var(--danger)">Н</div>
+            <div class="gr-body">
+              <div class="gr-subj">${escapeHTML(s?s.name:'—')}</div>
+              <div class="gr-meta">${formatDayLabel(a.date)} · пара ${a.n} · как 49 баллов, пока не отработано</div>
+            </div>
+            <button class="btn-secondary" data-mark-worked="${a.date}_${a.n}" style="margin:0; padding:8px 12px; font-size:12.5px; white-space:nowrap;">Отработано</button>
+          </div>`;
+        }).join('')}
+        ` : ''}
+
+        <div class="section-title">
+          Последние оценки
+        </div>
+        ${recent.length===0 ? `<p style="color:var(--text-tertiary); font-size:13.5px;">Пока нет оценок</p>` :
+          recent.map(g=>{
+            const s = Store.getSubject(g.subjectId);
+            return `<div class="grade-row" data-grade-id="${g.id}">
+              <div class="grade-badge" style="background:${s?s.color:'#999'}">${g.value}</div>
+              <div class="gr-body">
+                <div class="gr-subj">${escapeHTML(s?s.name:'—')}<span class="gr-mark" style="color:${markColor(g.value)};">· ${markFromScore(g.value)}</span></div>
+                <div class="gr-meta">${formatDayLabel(g.date)}${g.comment?' · '+escapeHTML(g.comment):''}</div>
+              </div>
+              ${Icons.chevron}
+            </div>`;
+          }).join('')}
+      </div>
+    `;
+
+    this.container.querySelector('#addGradeBtn').onclick = () => this.openAddGrade();
+    const pt = this.container.querySelector('#periodToggle');
+    if(pt) pt.onclick = () => { this.period = this.period==='week' ? 'month' : 'week'; this.render(); };
+    this.container.querySelectorAll('[data-grade-id]').forEach(row=>{
+      row.onclick = () => this.openGradeDetail(row.dataset.gradeId);
+    });
+    this.container.querySelectorAll('[data-mark-worked]').forEach(btn=>{
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        Store.toggleWorked(btn.dataset.markWorked);
+        this.render();
+        toast('Отмечено как отработано');
+      };
+    });
+  },
+
+  renderChart(buckets){
+    const w = 320, h = 140, padL = 28, padB = 22, padT = 12;
+    const plotW = w - padL - 10, plotH = h - padB - padT;
+    const scaleY = (v) => padT + plotH - (v/100)*plotH;
+    const stepX = plotW / Math.max(1, buckets.length-1);
+    const withVal = buckets.filter(b=>b.average!=null);
+    let pathD = '';
+    withVal.forEach((b,i)=>{
+      const idx = buckets.indexOf(b);
+      const x = padL + idx*stepX;
+      const y = scaleY(b.average);
+      pathD += (pathD ? ' L ' : 'M ') + x.toFixed(1) + ' ' + y.toFixed(1);
+    });
+    // gridlines at the mark boundaries (50/70/90) plus 0 and 100
+    const gridLines = [0,50,70,90,100].map(v=>{
+      const y = scaleY(v);
+      return `<line x1="${padL}" y1="${y}" x2="${w-8}" y2="${y}" stroke="var(--border)" stroke-width="1"/><text x="2" y="${y+4}" font-size="9.5" fill="var(--text-tertiary)">${v}</text>`;
+    }).join('');
+    const dots = withVal.map(b=>{
+      const idx = buckets.indexOf(b);
+      const x = padL + idx*stepX;
+      const y = scaleY(b.average);
+      return `<circle cx="${x}" cy="${y}" r="3.5" fill="var(--accent)"/>`;
+    }).join('');
+    const labels = buckets.map((b,i)=>{
+      const x = padL + i*stepX;
+      return `<text x="${x}" y="${h-4}" font-size="10" fill="var(--text-tertiary)" text-anchor="middle">${b.label}</text>`;
+    }).join('');
+    return `<svg viewBox="0 0 ${w} ${h}">
+      ${gridLines}
+      ${pathD ? `<path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+      ${dots}
+      ${labels}
+    </svg>`;
+  },
+
+  openAddGrade(){
+    let subjectId = Store.data.recentSubjects.find(id=>Store.getSubject(id)) || (Store.data.subjects[0] && Store.data.subjects[0].id) || null;
+    let value = 90;
+    let date = fmtDate(new Date());
+    const presets = [100, 85, 60, 35]; // one representative value per mark tier (5,4,3,2)
+    if(!subjectId){ toast('Сначала добавь предмет'); return; }
+
+    const bodyHTML = () => {
+      const s = Store.getSubject(subjectId);
+      return `
+        <div class="modal-title">Новая оценка<button class="close-x" id="closeX">${Icons.close}</button></div>
+        <div class="subject-picker-item" id="pickSubjRow" style="cursor:pointer; margin-bottom:14px;">
+          <div class="sw" style="background:${s.color}"></div>
+          <div style="flex:1;"><div class="sname">${escapeHTML(s.name)}</div></div>
+          ${Icons.chevron}
+        </div>
+        <div class="field">
+          <label>Балл (0–100)</label>
+          <input type="number" id="gScore" min="0" max="100" value="${value}" style="font-size:26px; font-weight:800; text-align:center;">
+          <div id="markPreview" style="text-align:center; margin-top:8px; font-size:13.5px; font-weight:700; color:${markColor(value)};">Оценка: ${markFromScore(value)}</div>
+        </div>
+        <div class="grade-pills" id="gradePills">
+          ${presets.map(v=>`<button class="grade-pill ${v===value?'active':''}" data-v="${v}" style="color:${markColor(v)};">${v}</button>`).join('')}
+        </div>
+        <div class="field"><label>Дата</label><input type="date" id="gDate" value="${date}"></div>
+        <div class="field"><label>Комментарий (необязательно)</label><input type="text" id="gComment" placeholder="Контрольная работа"></div>
+        <button class="btn-primary" id="gSaveBtn">Сохранить</button>
+      `;
+    };
+
+    openModal(bodyHTML(), (ov)=>{
+      const bind = () => {
+        const updatePreview = () => {
+          const mp = ov.querySelector('#markPreview');
+          mp.textContent = 'Оценка: ' + markFromScore(value);
+          mp.style.color = markColor(value);
+          ov.querySelectorAll('#gradePills .grade-pill').forEach(x=>x.classList.toggle('active', Number(x.dataset.v)===value));
+        };
+        ov.querySelector('#closeX').onclick = closeModal;
+        ov.querySelector('#pickSubjRow').onclick = () => {
+          openSubjectPickerModal((id)=>{ subjectId = id; updateTopModal(bodyHTML(), bind); });
+        };
+        ov.querySelectorAll('#gradePills .grade-pill').forEach(p=>{
+          p.onclick = () => {
+            value = Number(p.dataset.v);
+            ov.querySelector('#gScore').value = value;
+            updatePreview();
+          };
+        });
+        ov.querySelector('#gScore').oninput = (e) => {
+          const n = Number(e.target.value);
+          value = isNaN(n) ? 0 : Math.max(0, Math.min(100, n));
+          updatePreview();
+        };
+        ov.querySelector('#gSaveBtn').onclick = () => {
+          date = ov.querySelector('#gDate').value || date;
+          const comment = ov.querySelector('#gComment').value;
+          const raw = Number(ov.querySelector('#gScore').value);
+          if(isNaN(raw)){ toast('Введи балл от 0 до 100'); return; }
+          value = Math.max(0, Math.min(100, raw));
+          Store.addGrade({ subjectId, value, date, comment });
+          closeModal();
+          this.render();
+          toast('Оценка добавлена');
+        };
+      };
+      bind();
+    });
+  },
+
+  openGradeDetail(id){
+    const g = Store.data.grades.find(x=>x.id===id);
+    if(!g) return;
+    const s = Store.getSubject(g.subjectId);
+    openModal(`
+      <div class="modal-title">${escapeHTML(s?s.name:'Оценка')}<button class="close-x" id="closeX">${Icons.close}</button></div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <div class="grade-badge" style="background:${s?s.color:'#999'}; width:48px; height:48px; font-size:20px;">${g.value}</div>
+        <div>
+          <div style="font-weight:700; font-size:15px;">${formatDayLabel(g.date)} <span style="color:${markColor(g.value)};">· оценка ${markFromScore(g.value)}</span></div>
+          ${g.comment ? `<div style="font-size:13px; color:var(--text-secondary);">${escapeHTML(g.comment)}</div>` : ''}
+        </div>
+      </div>
+      <button class="btn-secondary danger" id="delGradeBtn" style="color:var(--danger); border-color:var(--danger-soft);">${Icons.trash} Удалить</button>
+    `, (ov)=>{
+      ov.querySelector('#closeX').onclick = closeModal;
+      ov.querySelector('#delGradeBtn').onclick = () => {
+        Store.deleteGrade(id);
+        closeModal();
+        this.render();
+        toast('Оценка удалена');
+      };
+    });
+  }
+};
+
+
+/* ===== screen-profile.js ===== */
+/* =========================================================
+   Paira — Profile screen + shared calendar modal
+   ========================================================= */
+
+const Profile = {
+  mount(container){ this.container = container; this.render(); },
+  unmount(){},
+
+  render(){
+    const p = Store.data.profile;
+    const initials = subjectShort(p.name || p.group || 'Я');
+    this.container.innerHTML = `
+      <div class="topbar"><h1>Профиль</h1></div>
+      <div class="screen" style="padding-top:2px;">
+        <div class="profile-head">
+          <div class="avatar">${initials}</div>
+          <div>
+            <div class="profile-name">${escapeHTML(p.name) || 'Студент'}</div>
+            <div class="profile-sub">${[p.group, p.college].filter(Boolean).map(escapeHTML).join(' · ') || 'Заполни данные в настройках'}</div>
+          </div>
+        </div>
+
+        <div class="list-group">
+          ${this.item('subjects', Icons.book, 'Мои предметы', Store.data.subjects.length + ' шт.')}
+          ${this.item('times', Icons.clock, 'Время пар', '')}
+          ${this.item('week', Icons.calendar, 'Расписание', '')}
+          ${this.item('calendar', Icons.calendar, 'Календарь', '')}
+        </div>
+
+        <div class="list-group">
+          ${this.item('notifications', Icons.bell, 'Уведомления', Store.data.settings.notifications.enabled ? 'Включены':'Выключены')}
+          <div class="list-item">
+            <div class="li-icon">${Icons.sun}</div>
+            <div class="li-text">Тема</div>
+          </div>
+          <div class="theme-row">
+            ${['light','dark','system'].map(t=>`<span class="theme-opt ${Store.data.settings.theme===t?'active':''}" data-theme-choice="${t}">${t==='light'?'Светлая':t==='dark'?'Тёмная':'Системная'}</span>`).join('')}
+          </div>
+        </div>
+
+        <div class="list-group">
+          ${this.item('settings', Icons.slider, 'Настройки профиля', '')}
+        </div>
+      </div>
+    `;
+    this.container.querySelectorAll('[data-item]').forEach(el=>{
+      el.onclick = () => this.openItem(el.dataset.item);
+    });
+    this.container.querySelectorAll('[data-theme-choice]').forEach(el=>{
+      el.onclick = () => { Store.data.settings.theme = el.dataset.themeChoice; Store.save(); applyTheme(); this.render(); };
+    });
+  },
+
+  item(key, icon, text, sub){
+    return `<div class="list-item" data-item="${key}" style="cursor:pointer;">
+      <div class="li-icon">${icon}</div>
+      <div class="li-text">${text}</div>
+      ${sub ? `<div class="li-sub">${sub}</div>` : ''}
+      <div class="chev">${Icons.chevron}</div>
+    </div>`;
+  },
+
+  openItem(key){
+    if(key==='subjects') this.openSubjects();
+    else if(key==='times') this.openTimeTemplates();
+    else if(key==='week') this.openWeekEditor();
+    else if(key==='calendar') openCalendarModal();
+    else if(key==='notifications') this.openNotifications();
+    else if(key==='settings') this.openSettings();
+  },
+
+  // ---------------- subjects ----------------
+  openSubjects(){
+    const render = () => {
+      updateTopModal(`
+        <div class="modal-title">Мои предметы<button class="close-x" id="closeX">${Icons.close}</button></div>
+        <div id="subjEditList">
+          ${Store.data.subjects.length===0 ? `<p style="color:var(--text-tertiary); font-size:13.5px;">Пока нет предметов</p>` :
+            Store.data.subjects.map(s=>`
+              <div class="subject-picker-item" data-edit-subj="${s.id}" style="cursor:pointer;">
+                <div class="sw" style="background:${s.color}"></div>
+                <div style="flex:1;">
+                  <div class="sname">${escapeHTML(s.name)}</div>
+                  <div class="smeta">${[s.teacher, s.room?'Каб. '+s.room:''].filter(Boolean).join(' · ')}</div>
+                </div>
+                ${Icons.chevron}
+              </div>`).join('')}
+        </div>
+        <button class="btn-secondary" id="addSubjBtn" style="margin-top:6px;">${Icons.plus} Добавить предмет</button>
+      `, (ov)=>{
+        ov.querySelector('#closeX').onclick = closeModal;
+        ov.querySelectorAll('[data-edit-subj]').forEach(el=>{
+          el.onclick = () => this.openSubjectForm(el.dataset.editSubj);
+        });
+        ov.querySelector('#addSubjBtn').onclick = () => this.openSubjectForm(null);
+      });
+    };
+    render();
+  },
+
+  openSubjectForm(id){
+    const existing = id ? Store.getSubject(id) : null;
+    let color = existing ? existing.color : SUBJECT_COLORS[Store.data.subjects.length % SUBJECT_COLORS.length];
+    openModal(`
+      <div class="modal-title">${existing?'Редактировать предмет':'Новый предмет'}<button class="close-x" id="closeX">${Icons.close}</button></div>
+      <div class="field"><label>Название</label><input type="text" id="sName" value="${existing?escapeHTML(existing.name):''}" placeholder="Например, Математика"></div>
+      <div class="field"><label>Преподаватель (необязательно)</label><input type="text" id="sTeacher" value="${existing?escapeHTML(existing.teacher):''}" placeholder="Иванов И.И."></div>
+      <div class="field"><label>Кабинет (необязательно)</label><input type="text" id="sRoom" value="${existing?escapeHTML(existing.room):''}" placeholder="312"></div>
+      <div class="field">
+        <label>Цвет</label>
+        <div class="color-select" id="colorPick">
+          ${SUBJECT_COLORS.map(c=>`<span class="color-dot ${c===color?'active':''}" style="background:${c}" data-color="${c}"></span>`).join('')}
+        </div>
+      </div>
+      <button class="btn-primary" id="saveBtn">Сохранить</button>
+      ${existing ? `<button class="btn-secondary" id="delBtn" style="color:var(--danger);">${Icons.trash} Удалить предмет</button>` : ''}
+    `, (ov)=>{
+      ov.querySelector('#closeX').onclick = closeModal;
+      ov.querySelectorAll('#colorPick .color-dot').forEach(d=>{
+        d.onclick = () => { ov.querySelectorAll('#colorPick .color-dot').forEach(x=>x.classList.remove('active')); d.classList.add('active'); color = d.dataset.color; };
+      });
+      ov.querySelector('#saveBtn').onclick = () => {
+        const name = ov.querySelector('#sName').value.trim();
+        if(!name){ toast('Введи название предмета'); return; }
+        const payload = { name, teacher: ov.querySelector('#sTeacher').value.trim(), room: ov.querySelector('#sRoom').value.trim(), color };
+        if(existing) Store.updateSubject(existing.id, payload);
+        else Store.addSubject(payload);
+        closeAllModals();
+        this.openSubjects();
+        this.render();
+      };
+      const delBtn = ov.querySelector('#delBtn');
+      if(delBtn) delBtn.onclick = () => {
+        confirmDialog('Удалить предмет?', 'Он будет убран из расписания и связанных заданий.', 'Удалить', ()=>{
+          Store.deleteSubject(existing.id);
+          closeAllModals();
+          this.openSubjects();
+          this.render();
+        }, true);
+      };
+    });
+  },
+
+  // ---------------- time templates ----------------
+  openTimeTemplates(){
+    let kind = 'regular';
+    const render = () => {
+      const slots = Store.data.timeTemplates[kind];
+      updateTopModal(`
+        <div class="modal-title">Время пар<button class="close-x" id="closeX">${Icons.close}</button></div>
+        <div class="seg-tabs" style="margin-bottom:16px;">
+          <button class="seg-tab ${kind==='regular'?'active':''}" data-k="regular">Обычный день</button>
+          <button class="seg-tab ${kind==='short'?'active':''}" data-k="short">Сокращённый</button>
+        </div>
+        <div id="slotsWrap">${slots.map(s=>Onb.slotRow(s)).join('')}</div>
+        <button class="btn-secondary" id="addSlotBtn">${Icons.plus} Добавить пару</button>
+      `, (ov)=>{
+        ov.querySelector('#closeX').onclick = closeModal;
+        ov.querySelectorAll('[data-k]').forEach(b=>{ b.onclick = () => { kind = b.dataset.k; render(); }; });
+        const bind = () => {
+          ov.querySelectorAll('#slotsWrap input[type="time"]').forEach(inp=>{
+            inp.onchange = () => {
+              const n = Number(inp.dataset.n);
+              const row = inp.closest('.slot-row');
+              const start = row.querySelector('[data-field="start"]').value;
+              const end = row.querySelector('[data-field="end"]').value;
+              if(end <= start){ toast('Окончание должно быть позже начала'); return; }
+              Store.setTemplateSlot(kind, n, start, end);
+              toast('Время обновлено');
+            };
+          });
+          ov.querySelectorAll('#slotsWrap .slot-remove').forEach(btn=>{
+            btn.onclick = () => { Store.removeTemplateSlot(kind, Number(btn.dataset.remove)); refresh(); };
+          });
+        };
+        const refresh = () => {
+          ov.querySelector('#slotsWrap').innerHTML = Store.data.timeTemplates[kind].map(s=>Onb.slotRow(s)).join('');
+          bind();
+        };
+        bind();
+        ov.querySelector('#addSlotBtn').onclick = () => { Store.addTemplateSlot(kind); refresh(); };
+      });
+    };
+    render();
+  },
+
+  // ---------------- weekly recurring editor ----------------
+  openWeekEditor(){
+    const order = ['mon','tue','wed','thu','fri','sat','sun'];
+    let dayIdx = 0;
+    const render = () => {
+      const wd = order[dayIdx];
+      const template = Store.data.timeTemplates.regular;
+      const current = Store.getLessonsForWeekday(wd);
+      updateTopModal(`
+        <div class="modal-title">Расписание<button class="close-x" id="closeX">${Icons.close}</button></div>
+        <div class="week-strip" style="margin-bottom:14px;">
+          ${order.map((d,i)=>`<div class="week-day ${i===dayIdx?'selected':''}" data-di="${i}"><div class="wd-name">${WEEKDAY_LABELS_SHORT[d]}</div></div>`).join('')}
+        </div>
+        <div id="weekDaySlots">
+          ${template.length===0 ? `<p style="color:var(--text-tertiary); font-size:13.5px;">Сначала настрой время пар</p>` : template.map(t=>{
+            const ex = current.find(c=>c.n===t.n);
+            const subj = ex ? Store.getSubject(ex.subjectId) : null;
+            return `
+            <div class="day-slot" data-n="${t.n}">
+              <div class="dnum">${t.n}</div>
+              <div style="flex:1;" data-pick="${t.n}">
+                <div class="dselect ${subj?'filled':''}">${subj?escapeHTML(subj.name):'Выбрать предмет'}</div>
+                <div class="dtime">${t.start} – ${t.end}</div>
+              </div>
+              ${subj?`<button class="dremove" data-clear="${t.n}">${Icons.close}</button>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+        ${template.length ? `<button class="btn-secondary" id="copyDayBtn" style="margin-top:14px;">${Icons.copy} Скопировать с другого дня</button>` : ''}
+      `, (ov)=>{
+        ov.querySelector('#closeX').onclick = ()=>{ closeModal(); this.render(); };
+        ov.querySelectorAll('[data-di]').forEach(el=>{ el.onclick = () => { dayIdx = Number(el.dataset.di); render(); }; });
+        ov.querySelectorAll('[data-pick]').forEach(el=>{
+          el.onclick = () => {
+            const n = Number(el.dataset.pick);
+            openSubjectPickerModal((subjectId)=>{ Store.setLessonSubject(wd, n, subjectId); render(); });
+          };
+        });
+        ov.querySelectorAll('[data-clear]').forEach(el=>{
+          el.onclick = (e) => { e.stopPropagation(); Store.setLessonSubject(wd, Number(el.dataset.clear), null); render(); };
+        });
+        const copyBtn = ov.querySelector('#copyDayBtn');
+        if(copyBtn) copyBtn.onclick = () => {
+          openModal(`
+            <div class="modal-title">Скопировать с какого дня?<button class="close-x" id="closeX2">${Icons.close}</button></div>
+            ${order.filter(d=>d!==wd).map(d=>{
+              const cnt = Store.getLessonsForWeekday(d).length;
+              return `<div class="subject-picker-item" data-src="${d}" style="cursor:pointer;"><div style="flex:1;"><div class="sname">${WEEKDAY_LABELS_FULL[d]}</div><div class="smeta">${cnt} ${pluralRu(cnt,'пара','пары','пар')}</div></div>${Icons.chevron}</div>`;
+            }).join('')}
+          `, (ov2)=>{
+            ov2.querySelector('#closeX2').onclick = closeModal;
+            ov2.querySelectorAll('[data-src]').forEach(el=>{
+              el.onclick = () => {
+                const src = el.dataset.src;
+                Store.getLessonsForWeekday(src).forEach(l => Store.setLessonSubject(wd, l.n, l.subjectId));
+                closeModal();
+                render();
+                toast('Расписание скопировано');
+              };
+            });
+          });
+        };
+      });
+    };
+    render();
+  },
+
+  // ---------------- notifications ----------------
+  openNotifications(){
+    const n = Store.data.settings.notifications;
+    const rowsDef = [
+      ['enabled','Включить уведомления'],
+      ['beforeLesson','За 10 минут до пары'],
+      ['lessonStart','О начале пары'],
+      ['lessonEnd','О завершении пары'],
+      ['homeworkDue','О сроке сдачи ДЗ']
+    ];
+    const render = () => {
+      openModal(`
+        <div class="modal-title">Уведомления<button class="close-x" id="closeX">${Icons.close}</button></div>
+        <div class="list-group" style="box-shadow:none;">
+          ${rowsDef.map(([key,label])=>`
+            <div class="check-row" data-key="${key}" style="padding:14px 15px; cursor:pointer;">
+              <span class="crlabel">${label}</span>
+              <span class="switch ${n[key]?'on':''}"><span class="knob"></span></span>
+            </div>`).join('')}
+        </div>
+        <p style="color:var(--text-tertiary); font-size:12.5px; line-height:1.5;">Уведомления сохраняются как предпочтение и будут использованы, когда приложение установлено как мобильное.</p>
+      `, (ov)=>{
+        ov.querySelector('#closeX').onclick = ()=>{ closeModal(); this.render(); };
+        ov.querySelectorAll('[data-key]').forEach(row=>{
+          row.onclick = () => {
+            const key = row.dataset.key;
+            n[key] = !n[key];
+            if(key==='enabled' && !n.enabled){ ['beforeLesson','lessonStart','lessonEnd','homeworkDue'].forEach(k=>{}); }
+            Store.save();
+            row.querySelector('.switch').classList.toggle('on', n[key]);
+          };
+        });
+      });
+    };
+    render();
+  },
+
+  // ---------------- settings ----------------
+  openSettings(){
+    const p = Store.data.profile;
+    openModal(`
+      <div class="modal-title">Настройки профиля<button class="close-x" id="closeX">${Icons.close}</button></div>
+      <div class="field"><label>Имя</label><input type="text" id="fName" value="${escapeHTML(p.name)}"></div>
+      <div class="field"><label>Группа</label><input type="text" id="fGroup" value="${escapeHTML(p.group)}"></div>
+      <div class="field"><label>Колледж</label><input type="text" id="fCollege" value="${escapeHTML(p.college)}"></div>
+      <div class="field">
+        <label>Учебные дни</label>
+        <div class="pill-select" id="daysPick">
+          ${['mon','tue','wed','thu','fri','sat','sun'].map(d=>`<span class="pill-opt ${Store.data.studyDays.includes(d)?'active':''}" data-day="${d}">${WEEKDAY_LABELS_SHORT[d]}</span>`).join('')}
+        </div>
+      </div>
+      <button class="btn-primary" id="saveBtn">Сохранить</button>
+      <button class="btn-secondary" id="exportBtn">${Icons.doc} Экспорт данных (JSON)</button>
+      <button class="btn-secondary" id="importBtn">${Icons.copy} Импортировать данные</button>
+      <input type="file" id="importFile" accept="application/json" class="hidden">
+      <button class="btn-secondary" id="resetBtn" style="color:var(--danger);">${Icons.trash} Сбросить все данные</button>
+    `, (ov)=>{
+      ov.querySelector('#closeX').onclick = closeModal;
+      ov.querySelectorAll('#daysPick .pill-opt').forEach(el=>{
+        el.onclick = () => {
+          const d = el.dataset.day;
+          const set = new Set(Store.data.studyDays);
+          if(set.has(d)) set.delete(d); else set.add(d);
+          Store.data.studyDays = Array.from(set);
+          Store.save();
+          el.classList.toggle('active');
+        };
+      });
+      ov.querySelector('#saveBtn').onclick = () => {
+        p.name = ov.querySelector('#fName').value.trim();
+        p.group = ov.querySelector('#fGroup').value.trim();
+        p.college = ov.querySelector('#fCollege').value.trim();
+        Store.save();
+        closeModal();
+        this.render();
+        toast('Сохранено');
+      };
+      ov.querySelector('#exportBtn').onclick = () => {
+        try{
+          const blob = new Blob([JSON.stringify(Store.data, null, 2)], { type:'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = 'paira-backup.json';
+          document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+          toast('Файл сохранён');
+        } catch(e){ toast('Не удалось выгрузить данные'); }
+      };
+      ov.querySelector('#importBtn').onclick = () => ov.querySelector('#importFile').click();
+      ov.querySelector('#importFile').onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          let parsed;
+          try{ parsed = JSON.parse(reader.result); }
+          catch(err){ toast('Не удалось прочитать файл'); return; }
+          confirmDialog('Импортировать данные?', 'Текущие данные будут заменены содержимым файла paira-backup.json.', 'Импортировать', ()=>{
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+            closeModal();
+            location.reload();
+          }, true);
+        };
+        reader.readAsText(file);
+      };
+      ov.querySelector('#resetBtn').onclick = () => {
+        confirmDialog('Сбросить все данные?', 'Это удалит расписание, предметы и задания без возможности восстановления.', 'Сбросить', ()=>{
+          Store.reset();
+          closeModal();
+          location.reload();
+        }, true);
+      };
+    });
+  }
+};
+
+/* =========================================================
+   Shared calendar modal — used from Home topbar and Profile
+   ========================================================= */
+const CalState = { year: new Date().getFullYear(), month: new Date().getMonth() };
+
+const SPECIAL_TYPES = [
+  { key:'regular', label:'Обычный день' },
+  { key:'personal', label:'Личный выходной' },
+  { key:'sick', label:'Больничный' },
+  { key:'holiday', label:'Праздник' },
+  { key:'short', label:'Сокращённый день' }
+];
+
+function openCalendarModal(){
+  CalState.year = new Date().getFullYear();
+  CalState.month = new Date().getMonth();
+  renderCalendarModal();
+}
+
+function renderCalendarModal(){
+  const y = CalState.year, m = CalState.month;
+  const first = new Date(y, m, 1);
+  const startDow = (first.getDay()+6)%7; // Monday-first
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayStr = fmtDate(new Date());
+  const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += `<div class="cal-cell muted"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const ds = `${y}-${pad2(m+1)}-${pad2(d)}`;
+    const info = getDayType(ds);
+    let markCls = '';
+    if(info.type==='vacation') markCls = 'mark-vacation';
+    else if(info.type==='holiday') markCls = 'mark-holiday';
+    else if(info.type==='sick') markCls = 'mark-sick';
+    else if(info.type==='personal') markCls = 'mark-personal';
+    else if(info.type==='short') markCls = 'mark-short';
+    cells += `<div class="cal-cell ${markCls} ${ds===todayStr?'today':''}" data-date="${ds}">${d}</div>`;
+  }
+
+  updateTopModal(`
+    <div class="modal-title">Календарь<button class="close-x" id="closeX">${Icons.close}</button></div>
+    <div class="cal-nav">
+      <button id="prevM">${Icons.chevronLeft}</button>
+      <div class="cn-title">${monthNames[m]} ${y}</div>
+      <button id="nextM">${Icons.chevron}</button>
+    </div>
+    <div class="calendar-grid">
+      ${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+      ${cells}
+    </div>
+    <div style="display:flex; gap:10px; margin-top:18px;">
+      <button class="btn-secondary" id="addVacBtn" style="margin-top:0; flex:1;">${Icons.plus} Каникулы</button>
+      <button class="btn-secondary" id="addSickBtn" style="margin-top:0; flex:1;">${Icons.plus} Больничный</button>
+    </div>
+  `, (ov)=>{
+    ov.querySelector('#closeX').onclick = closeModal;
+    ov.querySelector('#prevM').onclick = () => { CalState.month--; if(CalState.month<0){CalState.month=11;CalState.year--;} renderCalendarModal(); };
+    ov.querySelector('#nextM').onclick = () => { CalState.month++; if(CalState.month>11){CalState.month=0;CalState.year++;} renderCalendarModal(); };
+    ov.querySelectorAll('[data-date]').forEach(cell=>{
+      cell.onclick = () => openDayTypeModal(cell.dataset.date);
+    });
+    ov.querySelector('#addVacBtn').onclick = () => openVacationForm();
+    ov.querySelector('#addSickBtn').onclick = () => openSickForm();
+  });
+}
+
+function openDayTypeModal(ds){
+  const info = getDayType(ds);
+  const vac = Store.getVacationForDate(ds);
+  const sickLeave = Store.getSickForDate(ds);
+  openModal(`
+    <div class="modal-title">${formatDayLabel(ds) === 'сегодня' || formatDayLabel(ds)==='завтра' ? formatDayLabel(ds) : ds}<button class="close-x" id="closeX">${Icons.close}</button></div>
+    ${vac ? `<p style="font-size:13.5px; color:var(--text-secondary); margin:-6px 0 16px;">Входит в каникулы «${escapeHTML(vac.name)}» (${vac.start} – ${vac.end})</p>
+      <button class="btn-secondary" id="removeVacBtn" style="color:var(--danger);">Убрать каникулы</button>` : sickLeave ? `
+      <p style="font-size:13.5px; color:var(--text-secondary); margin:-6px 0 16px;">Входит в больничный${sickLeave.reason?' «'+escapeHTML(sickLeave.reason)+'»':''} (${sickLeave.start} – ${sickLeave.end})</p>
+      <button class="btn-secondary" id="removeSickBtn" style="color:var(--danger);">Убрать больничный</button>` : `
+    <p style="font-size:13px; color:var(--text-secondary); margin:-6px 0 14px;">Тип дня</p>
+    <div class="pill-select" id="typePick">
+      ${SPECIAL_TYPES.map(t=>`<span class="pill-opt ${ (info.type===t.key || (t.key==='regular' && ['regular','weekend'].includes(info.type))) ?'active':''}" data-type="${t.key}">${t.label}</span>`).join('')}
+    </div>
+    `}
+  `, (ov)=>{
+    ov.querySelector('#closeX').onclick = closeModal;
+    const rv = ov.querySelector('#removeVacBtn');
+    if(rv) rv.onclick = () => { Store.removeVacation(vac.id); closeModal(); renderCalendarModal(); };
+    const rs = ov.querySelector('#removeSickBtn');
+    if(rs) rs.onclick = () => { Store.removeSickLeave(sickLeave.id); closeModal(); renderCalendarModal(); };
+    ov.querySelectorAll('[data-type]').forEach(el=>{
+      el.onclick = () => {
+        const t = el.dataset.type;
+        Store.setSpecialDay(ds, t==='regular' ? null : t);
+        closeModal();
+        renderCalendarModal();
+        toast('День обновлён');
+      };
+    });
+  });
+}
+
+function openSickForm(){
+  openModal(`
+    <div class="modal-title">Больничный<button class="close-x" id="closeX">${Icons.close}</button></div>
+    <div class="field"><label>Причина (необязательно)</label><input type="text" id="sickReason" placeholder="ОРВИ"></div>
+    <div class="field"><label>Начало</label><input type="date" id="sickStart"></div>
+    <div class="field"><label>Конец</label><input type="date" id="sickEnd"></div>
+    <button class="btn-primary" id="saveSickBtn">Сохранить</button>
+  `, (ov)=>{
+    ov.querySelector('#closeX').onclick = closeModal;
+    ov.querySelector('#saveSickBtn').onclick = () => {
+      const start = ov.querySelector('#sickStart').value;
+      const end = ov.querySelector('#sickEnd').value;
+      if(!start || !end || end < start){ toast('Проверь даты'); return; }
+      Store.addSickLeave(start, end, ov.querySelector('#sickReason').value.trim());
+      closeModal();
+      renderCalendarModal();
+      toast('Больничный добавлен');
+    };
+  });
+}
+
+function openVacationForm(){
+  openModal(`
+    <div class="modal-title">Каникулы<button class="close-x" id="closeX">${Icons.close}</button></div>
+    <div class="field"><label>Название (необязательно)</label><input type="text" id="vacName" placeholder="Зимние каникулы"></div>
+    <div class="field"><label>Начало</label><input type="date" id="vacStart"></div>
+    <div class="field"><label>Конец</label><input type="date" id="vacEnd"></div>
+    <button class="btn-primary" id="saveVacBtn">Сохранить</button>
+  `, (ov)=>{
+    ov.querySelector('#closeX').onclick = closeModal;
+    ov.querySelector('#saveVacBtn').onclick = () => {
+      const start = ov.querySelector('#vacStart').value;
+      const end = ov.querySelector('#vacEnd').value;
+      if(!start || !end || end < start){ toast('Проверь даты'); return; }
+      Store.addVacation(start, end, ov.querySelector('#vacName').value.trim() || 'Каникулы');
+      closeModal();
+      renderCalendarModal();
+      toast('Каникулы добавлены');
+    };
+  });
+}
+
+function applyTheme(){
+  const t = Store.data.settings.theme;
+  let effective = t;
+  if(t === 'system') effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  if(effective === 'dark') document.documentElement.setAttribute('data-theme','dark');
+  else document.documentElement.removeAttribute('data-theme');
+}
+
+
+/* ===== app.js ===== */
+/* =========================================================
+   Paira — App bootstrap & tab routing
+   ========================================================= */
+
+const App = {
+  currentTab: null,
+  modules: { home: Home, schedule: Schedule, homework: Homework, grades: Grades, profile: Profile },
+
+  init(){
+    Store.load();
+    applyTheme();
+    if(window.matchMedia){
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if(Store.data.settings.theme === 'system') applyTheme();
+      });
+    }
+    if(!Store.data.profile.onboarded){
+      Onb.start();
+    } else {
+      this.boot();
+    }
+  },
+
+  boot(){
+    document.getElementById('bottomNav').classList.remove('hidden');
+    this.switchTab('home');
+  },
+
+  switchTab(tab, opts){
+    if(this.currentTab && this.modules[this.currentTab] && this.modules[this.currentTab].unmount){
+      this.modules[this.currentTab].unmount();
+    }
+    this.currentTab = tab;
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    const appEl = document.getElementById('app');
+    this.modules[tab].mount(appEl, opts);
+    window.scrollTo(0,0);
+  }
+};
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', () => App.switchTab(btn.dataset.tab));
+});
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+
+</script>
+</body>
+</html>
