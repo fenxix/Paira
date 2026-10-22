@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#2E6FF2">
+<meta name="theme-color" content="#EDEDF0">
 <meta name="description" content="Твоё расписание, время пар, домашние задания и оценки в одном месте">
 <title>Paira — расписание колледжа</title>
 <link rel="manifest" href="manifest.json">
@@ -636,6 +636,163 @@ a{ color:inherit; text-decoration:none; }
   backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
 }
 
+
+/* =========================================================
+   Paira — Liquid Glass (dark / white, no blue)
+   ========================================================= */
+:root{
+  --bg:#EDEDF0; --surface:rgba(255,255,255,.58); --surface-2:rgba(255,255,255,.36); --sheet-bg:rgba(250,250,252,.70);
+  --accent:#1C1C1E; --accent-2:#3A3A3C; --accent-soft:rgba(60,60,67,.09); --on-accent:#fff;
+  --text:#1C1C1E; --text-secondary:rgba(60,60,67,.64); --text-tertiary:rgba(60,60,67,.38);
+  --border:rgba(60,60,67,.11); --hair:rgba(60,60,67,.14);
+  --success:#34C759; --success-soft:rgba(52,199,89,.15); --warning:#FF9F0A; --warning-soft:rgba(255,159,10,.16);
+  --danger:#FF3B30; --danger-soft:rgba(255,59,48,.13); --info:#8E8E93;
+  --radius-l:36px; --radius-m:26px; --radius-s:18px;
+  --glass-blur:blur(30px) saturate(190%);
+  --glass-hi:inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.3), inset 0 0 0 1px rgba(255,255,255,.4);
+  --shadow-card:0 10px 32px rgba(0,0,0,.06), var(--glass-hi);
+  --shadow-pop:0 26px 64px rgba(0,0,0,.16), var(--glass-hi);
+}
+[data-theme="dark"]{
+  --bg:#000; --surface:rgba(255,255,255,.075); --surface-2:rgba(255,255,255,.05); --sheet-bg:rgba(30,30,32,.68);
+  --accent:#F5F5F7; --accent-2:#D1D1D6; --accent-soft:rgba(255,255,255,.12); --on-accent:#000;
+  --text:#F5F5F7; --text-secondary:rgba(235,235,245,.62); --text-tertiary:rgba(235,235,245,.34);
+  --border:rgba(255,255,255,.10); --hair:rgba(255,255,255,.16);
+  --success:#30D158; --success-soft:rgba(48,209,88,.18); --warning:#FF9F0A; --warning-soft:rgba(255,159,10,.18);
+  --danger:#FF453A; --danger-soft:rgba(255,69,58,.18); --info:#98989D;
+  --glass-hi:inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(255,255,255,.04), inset 0 0 0 1px rgba(255,255,255,.06);
+  --shadow-card:0 14px 36px rgba(0,0,0,.55), var(--glass-hi);
+  --shadow-pop:0 30px 72px rgba(0,0,0,.72), var(--glass-hi);
+}
+body{ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+body::before{ filter:blur(44px); background:
+  radial-gradient(40% 30% at 10% 6%, rgba(255,255,255,.95), transparent 66%),
+  radial-gradient(38% 30% at 94% 20%, rgba(180,180,192,.50), transparent 66%),
+  radial-gradient(44% 34% at 18% 98%, rgba(165,165,178,.42), transparent 66%),
+  radial-gradient(40% 30% at 98% 90%, rgba(255,255,255,.85), transparent 66%); }
+[data-theme="dark"] body::before{ background:
+  radial-gradient(40% 28% at 12% 5%, rgba(255,255,255,.17), transparent 66%),
+  radial-gradient(36% 28% at 94% 22%, rgba(160,160,172,.15), transparent 66%),
+  radial-gradient(44% 34% at 16% 98%, rgba(130,130,142,.17), transparent 66%),
+  radial-gradient(38% 28% at 98% 88%, rgba(255,255,255,.09), transparent 66%); }
+:focus-visible{ outline:2px solid var(--text-secondary); outline-offset:2px; }
+
+/* air + type */
+#app{ padding-bottom:150px; }
+.topbar{ padding:30px 24px 8px; }
+.topbar h1{ font-size:36px; font-weight:700; letter-spacing:-.035em; margin:0 0 6px; }
+.topbar .sub{ font-size:15px; }
+.screen{ padding:10px 22px 28px; }
+.section-title{ font-size:21px; font-weight:700; letter-spacing:-.02em; margin:34px 4px 14px; }
+.section-title .link{ font-size:14px; font-weight:600; color:var(--text-secondary); }
+.hero-title,.modal-title,.profile-name,.onb-title,.stat-card .v,.info-card .v{ font-weight:700; }
+.lesson-num,.week-day .wd-num,.grade-pill,.grade-badge,.avatar{ font-weight:600; }
+
+/* icon buttons, glass circles */
+.icon-btn{ width:46px; height:46px; border-radius:50%; background:var(--surface); box-shadow:var(--shadow-card); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); }
+
+/* hero */
+:root .hero-card,:root .hero-card.neutral{
+  background:linear-gradient(155deg,var(--surface),var(--surface-2)); color:var(--text); border:1px solid var(--border);
+  box-shadow:var(--shadow-card); border-radius:var(--radius-l); padding:30px 28px;
+  backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); }
+:root .hero-card .pill{ background:var(--accent-soft); color:var(--text); }
+:root .hero-card .pill .dot{ background:var(--text-secondary); }
+:root .hero-card .pill.live .dot{ background:var(--success); }
+:root .hero-card .hero-meta,:root .hero-card .hero-timer-label{ color:var(--text-secondary); opacity:1; }
+.hero-title{ font-size:30px; letter-spacing:-.03em; margin:18px 0 4px; }
+.hero-timer{ font-size:54px; font-weight:300; letter-spacing:-.04em; }
+:root .hero-card .ring-track{ stroke:var(--hair); stroke-width:5; }
+:root .hero-card .ring-fill{ stroke:var(--text); stroke-width:5; }
+.ring-wrap{ width:84px; height:84px; }
+.ring-pct{ font-weight:600; }
+
+/* cards */
+.next-card,.lesson-row,.hw-card,.stat-card,.grade-chart-wrap,.grade-row,.subj-avg-row,.list-group,.info-card,.fr-card,.parity-row{
+  background:linear-gradient(160deg,var(--surface),var(--surface-2)); }
+.next-card{ margin-top:16px; padding:20px 22px; border-radius:var(--radius-m); }
+:root .next-card .badge{ background:var(--accent-soft); color:var(--text); }
+.lesson-row{ padding:16px 18px; margin-bottom:12px; gap:12px; }
+.lesson-row.active{ background:var(--accent-soft); border-color:var(--text-tertiary); }
+:root .lesson-row.active .lesson-num{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
+.lesson-num{ width:38px; height:38px; border-radius:50%; }
+.lesson-subject{ font-size:16px; font-weight:600; }
+.hw-card,.stat-card,.grade-row,.subj-avg-row,.info-card,.fr-card{ padding:18px; margin-bottom:12px; }
+.hw-swatch,.grade-badge{ border-radius:14px; }
+.list-item{ padding:17px 18px; }
+.list-item .li-icon{ border-radius:50%; }
+.stat-grid{ gap:12px; }
+.empty-state{ padding:56px 24px; }
+
+/* nav: floating glass tab bar */
+:root .bottom-nav{
+  left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom)); width:auto; max-width:none; margin:0 auto;
+  padding:7px; border:1px solid var(--border); border-radius:40px; gap:2px;
+  background:linear-gradient(160deg,var(--surface),var(--surface-2)); box-shadow:var(--shadow-pop);
+  backdrop-filter:blur(40px) saturate(200%); -webkit-backdrop-filter:blur(40px) saturate(200%); }
+@media (min-width:540px){ :root .bottom-nav{ left:50%; right:auto; transform:translateX(-50%); width:calc(100% - 32px); max-width:488px; border-radius:40px; } }
+.nav-btn{ border-radius:32px; padding:9px 4px 8px; color:var(--text-secondary); max-width:none; transition:background .2s, color .2s; }
+.nav-btn span{ font-size:10.5px; font-weight:600; }
+.nav-btn.active{ color:var(--text); background:var(--accent-soft); box-shadow:var(--glass-hi); }
+.toast-root{ bottom:128px; }
+.toast{ border-radius:999px; padding:12px 20px; backdrop-filter:var(--glass-blur); }
+
+/* week strip, chips, segments */
+.week-strip{ gap:8px; }
+.week-day{ border-radius:24px; padding:13px 4px; box-shadow:var(--glass-hi); background:linear-gradient(160deg,var(--surface),var(--surface-2)); }
+:root .week-day.selected{ background:var(--accent); border-color:var(--accent); box-shadow:0 10px 26px rgba(0,0,0,.22); }
+:root .week-day.selected .wd-name,:root .week-day.selected .wd-num{ color:var(--on-accent); }
+.week-day.today:not(.selected){ border-color:var(--text-secondary); }
+.chip,.pill-opt,.theme-opt,.grade-pill,.subj-tag,.attach-chip,.subj-file-item,.day-slot,.cal-nav button,.btn-secondary{ box-shadow:var(--glass-hi); }
+.chip,.pill-opt{ border-radius:999px; padding:10px 17px; }
+:root .chip.active,:root .pill-opt.active,:root .theme-opt.active{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+.theme-opt{ border-radius:999px; padding:12px 4px; }
+.seg-tabs{ border-radius:999px; padding:5px; }
+.seg-tab{ border-radius:999px; padding:11px 6px; }
+.week-parity,.tag-pill{ color:var(--text); }
+:root .day-banner.vacation{ background:var(--accent-soft); color:var(--text); }
+.day-banner{ border-radius:var(--radius-m); padding:16px 18px; }
+.cal-cell.mark-vacation{ background:rgba(142,142,147,.22); }
+.cal-cell{ border-radius:50%; }
+
+/* buttons: pill shaped */
+:root .btn-primary{ background:var(--accent); color:var(--on-accent); border-radius:999px; padding:17px; font-weight:600; box-shadow:0 12px 30px rgba(0,0,0,.20); }
+[data-theme="dark"] .btn-primary{ box-shadow:0 10px 34px rgba(255,255,255,.14); }
+:root .btn-primary.danger{ background:var(--danger); color:#fff; box-shadow:0 12px 30px rgba(255,59,48,.28); }
+.btn-secondary{ border-radius:999px; padding:16px; }
+:root .fab{ background:var(--accent); color:var(--on-accent); border-radius:999px; padding:15px 22px; box-shadow:0 12px 30px rgba(0,0,0,.22); }
+:root .switch{ width:51px; height:31px; background:rgba(120,120,128,.32); }
+:root .switch.on{ background:var(--success); }
+.switch .knob{ width:27px; height:27px; top:2px; left:2px; background:#fff; }
+.switch.on .knob{ left:22px; }
+.avatar{ background:var(--accent-soft); color:var(--text); border-radius:50%; box-shadow:var(--glass-hi); }
+.avatar-edit{ color:var(--text); }
+
+/* sheets + fields */
+.modal-overlay{ background:rgba(0,0,0,.28); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+[data-theme="dark"] .modal-overlay{ background:rgba(0,0,0,.55); }
+.modal-sheet{ border-radius:40px 40px 0 0; padding:12px 24px calc(32px + env(safe-area-inset-bottom));
+  backdrop-filter:blur(44px) saturate(190%); -webkit-backdrop-filter:blur(44px) saturate(190%); }
+.modal-grabber{ background:var(--text-tertiary); }
+.modal-title{ font-size:22px; letter-spacing:-.02em; margin:6px 0 22px; }
+.modal-title .close-x{ width:34px; height:34px; border-radius:50%; }
+.field{ margin-bottom:20px; }
+.field label{ font-weight:600; margin-bottom:8px; }
+.field input[type="text"],.field input[type="date"],.field input[type="time"],.field input[type="password"],.field textarea,.field select{
+  border-radius:var(--radius-s); padding:15px 16px; box-shadow:var(--glass-hi); }
+.field input:focus,.field textarea:focus,.field select:focus{ border-color:var(--text-tertiary); }
+.wizard-step{ color:var(--text-secondary); }
+:root .wizard-dots .d.done{ background:var(--text); }
+
+/* onboarding logo */
+.onb-wrap{ padding:72px 30px 40px; }
+:root .onb-logo{ width:140px; height:140px; border-radius:0; background:none; box-shadow:none; margin:0 auto 34px; }
+.onb-logo img{ width:100%; height:100%; object-fit:contain; display:block; -webkit-user-drag:none; }
+:root .onb-logo.glyph{ width:100px; height:100px; border-radius:50%; background:var(--surface); border:1px solid var(--border);
+  box-shadow:var(--shadow-card); color:var(--text); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); }
+.onb-title{ font-size:36px; letter-spacing:-.035em; }
+.onb-desc{ font-size:16px; }
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
 </style>
 </head>
 <body>
@@ -691,7 +848,7 @@ const WEEKDAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat']; // JS getDay()
 const WEEKDAY_LABELS_SHORT = { mon:'Пн', tue:'Вт', wed:'Ср', thu:'Чт', fri:'Пт', sat:'Сб', sun:'Вс' };
 const WEEKDAY_LABELS_FULL = { mon:'Понедельник', tue:'Вторник', wed:'Среда', thu:'Четверг', fri:'Пятница', sat:'Суббота', sun:'Воскресенье' };
 
-const SUBJECT_COLORS = ['#6E56E8','#4AA8F0','#2FBE79','#F3A93B','#F0506E','#EC6FC1','#3BC9C9','#F08A4B'];
+const SUBJECT_COLORS = ['#8E8E93','#34C759','#FF9F0A','#FF453A','#FF6482','#D9A400','#AC8E68','#30B0A0'];
 
 function uid(prefix){
   return (prefix ? prefix + '_' : '') + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
@@ -1692,8 +1849,8 @@ function renderDayImageCanvas(dateStr){
   const W = 720, PAD = 40;
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const palette = isDark
-    ? { bg:'#131120', card:'#1C1A2B', text:'#F4F3FA', sub:'#9C98B2', border:'#2C2A3E', accent:'#8877F4', accent2:'#A395F7', danger:'#F17188' }
-    : { bg:'#F6F5FB', card:'#FFFFFF', text:'#17151F', sub:'#837F94', border:'#ECEAF4', accent:'#6E56E8', accent2:'#9285F2', danger:'#F0506E' };
+    ? { bg:'#000000', card:'#1C1C1E', text:'#F5F5F7', sub:'#98989D', border:'#2C2C2E', accent:'#F5F5F7', accent2:'#D1D1D6', danger:'#FF453A' }
+    : { bg:'#F2F2F7', card:'#FFFFFF', text:'#1C1C1E', sub:'#8E8E93', border:'#E5E5EA', accent:'#1C1C1E', accent2:'#3A3A3C', danger:'#FF3B30' };
 
   const dayInfo = getDayType(dateStr);
   const lessons = getLessonsForDate(dateStr, dayInfo);
@@ -1731,7 +1888,7 @@ function renderDayImageCanvas(dateStr){
     const label = parityLabel(weekParity(dateStr));
     ctx.font = '700 14px -apple-system, "SF Pro Text", Roboto, Arial, sans-serif';
     const bw = ctx.measureText(label).width + 28;
-    ctx.fillStyle = isDark ? 'rgba(136,119,244,0.18)' : '#EFEBFE';
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.12)' : '#EDEDF0';
     drawRoundedRect(ctx, W-PAD-bw, PAD+8, bw, 32, 16);
     ctx.fill();
     ctx.fillStyle = palette.accent;
@@ -1940,7 +2097,7 @@ const Onb = {
       <div class="onb-wrap">
         <div>
           <div class="onb-logo">
-            ${Icons.logo.replace('currentColor','#fff')}
+            <img src="logo.png" alt="Paira" draggable="false">
           </div>
           <div class="onb-title">Paira</div>
           <p class="onb-desc">Твоё расписание, время пар и домашние задания в одном месте</p>
@@ -2031,7 +2188,7 @@ const Onb = {
     app.innerHTML = `
       <div class="onb-wrap">
         <div>
-          <div class="onb-logo">${Icons.check.replace('currentColor','#fff')}</div>
+          <div class="onb-logo glyph">${Icons.check}</div>
           <div class="onb-title">Готово</div>
           <p class="onb-desc">Добро пожаловать в Paira. Твоё расписание уже настроено.</p>
         </div>
@@ -4166,6 +4323,8 @@ function applyTheme(){
   if(t === 'system') effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   if(effective === 'dark') document.documentElement.setAttribute('data-theme','dark');
   else document.documentElement.removeAttribute('data-theme');
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if(tc) tc.content = effective === 'dark' ? '#000000' : '#EDEDF0';
 }
 
 

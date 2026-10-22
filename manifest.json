@@ -1,14 +1,14 @@
 {
-  "name": "Paira — расписание колледжа",
+  "name": "Paira",
   "short_name": "Paira",
-  "description": "Твоё расписание, время пар, домашние задания и оценки в одном месте",
-  "start_url": "./index.html",
+  "description": "Расписание колледжа",
+  "lang": "ru",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#131120",
-  "theme_color": "#6E56E8",
-  "lang": "ru",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "icon-192.png",
